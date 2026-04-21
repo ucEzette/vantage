@@ -1,7 +1,7 @@
 """x402 payment signer — delegates signing to Web's Circle MPC proxy.
 
 The Prime Agent never holds private keys. Signing is done by calling
-POST /api/corpus/:id/sign on the Corpus Web server, which uses Circle
+POST /api/vantage/:id/sign on the Vantage Web server, which uses Circle
 Developer-Controlled Wallets (MPC) to produce EIP-3009 signatures.
 """
 

@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS spending_log (
     created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS corpus_config (
+CREATE TABLE IF NOT EXISTS vantage_config (
     key    TEXT PRIMARY KEY,
     value  TEXT NOT NULL
 );
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS playbooks (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT NOT NULL,
     data        TEXT NOT NULL,
-    source_corpus TEXT,
+    source_vantage TEXT,
     applied     INTEGER NOT NULL DEFAULT 0,
     purchased_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -227,33 +227,33 @@ class LocalDB:
         )
         self._conn.commit()
 
-    # ── Corpus Config Cache ────────────────────────────────
+    # ── Vantage Config Cache ────────────────────────────────
 
     def set_config(self, key: str, value: str) -> None:
         self._conn.execute(
-            "INSERT INTO corpus_config (key, value) VALUES (?, ?) "
+            "INSERT INTO vantage_config (key, value) VALUES (?, ?) "
             "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
             (key, value),
         )
         self._conn.commit()
 
     def get_config(self, key: str) -> str | None:
-        row = self._conn.execute("SELECT value FROM corpus_config WHERE key = ?", (key,)).fetchone()
+        row = self._conn.execute("SELECT value FROM vantage_config WHERE key = ?", (key,)).fetchone()
         return row["value"] if row else None
 
-    def set_corpus_config(self, data: dict) -> None:
-        self.set_config("corpus_data", json.dumps(data))
+    def set_vantage_config(self, data: dict) -> None:
+        self.set_config("vantage_data", json.dumps(data))
 
-    def get_corpus_config(self) -> dict | None:
-        raw = self.get_config("corpus_data")
+    def get_vantage_config(self) -> dict | None:
+        raw = self.get_config("vantage_data")
         return json.loads(raw) if raw else None
 
     # ── Playbooks ──────────────────────────────────────────
 
-    def save_playbook(self, name: str, data: dict, source_corpus: str | None = None) -> None:
+    def save_playbook(self, name: str, data: dict, source_vantage: str | None = None) -> None:
         self._conn.execute(
-            "INSERT INTO playbooks (name, data, source_corpus) VALUES (?, ?, ?)",
-            (name, json.dumps(data), source_corpus),
+            "INSERT INTO playbooks (name, data, source_vantage) VALUES (?, ?, ?)",
+            (name, json.dumps(data), source_vantage),
         )
         self._conn.commit()
 

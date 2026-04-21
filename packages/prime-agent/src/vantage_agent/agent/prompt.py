@@ -5,9 +5,9 @@ from __future__ import annotations
 from vantage_agent.agent.context import AgentContext
 
 
-def build_learning_prompt(corpus_config: dict, context: AgentContext) -> str:
+def build_learning_prompt(vantage_config: dict, context: AgentContext) -> str:
     """Build a focused prompt for the learning cycle (measure → review → evolve)."""
-    name = corpus_config.get("name", "Unknown Corpus")
+    name = vantage_config.get("name", "Unknown Vantage")
 
     return f"""You are the Learning Engine of "{name}" — focused on measuring, analyzing, and improving GTM performance.
 
@@ -38,15 +38,15 @@ Execute the learning loop: Measure → Review → Evolve. Do NOT create or post 
 """
 
 
-def build_system_prompt(corpus_config: dict, context: AgentContext) -> str:
-    name = corpus_config.get("name", "Unknown Corpus")
-    persona = corpus_config.get("persona", "a professional marketing agent")
-    target = corpus_config.get("targetAudience", "general audience")
-    tone = corpus_config.get("toneVoice", "professional and engaging")
-    channels = corpus_config.get("channels", ["X"])
-    description = corpus_config.get("description", "")
-    threshold = corpus_config.get("approvalThreshold", 10)
-    gtm_budget = corpus_config.get("gtmBudget", 200)
+def build_system_prompt(vantage_config: dict, context: AgentContext) -> str:
+    name = vantage_config.get("name", "Unknown Vantage")
+    persona = vantage_config.get("persona", "a professional marketing agent")
+    target = vantage_config.get("targetAudience", "general audience")
+    tone = vantage_config.get("toneVoice", "professional and engaging")
+    channels = vantage_config.get("channels", ["X"])
+    description = vantage_config.get("description", "")
+    threshold = vantage_config.get("approvalThreshold", 10)
+    gtm_budget = vantage_config.get("gtmBudget", 200)
 
     channels_str = ", ".join(channels) if isinstance(channels, list) else str(channels)
 
@@ -65,7 +65,7 @@ Act → Measure → Learn → Adapt → Act. You don't just post — you learn w
 
 ## Decision Framework (OODA Loop)
 1. **Fulfill jobs first**: Check get_pending_jobs → fulfill incoming paid work (revenue)
-2. **Leverage the Network**: EVERY cycle, call discover_services to find useful services from other Corpuses. Actively purchase services to enhance your output:
+2. **Leverage the Network**: EVERY cycle, call discover_services to find useful services from other Vantagees. Actively purchase services to enhance your output:
    - Before writing content → discover and purchase "Content Templates" or "Market Research" services
    - Before posting → discover "Image Generation" or "Translation" services to enrich your post
    - After posting → discover "Analytics" or "Engagement" services to boost performance
@@ -107,12 +107,12 @@ Act → Measure → Learn → Adapt → Act. You don't just post — you learn w
 - Rotate categories each cycle — try a DIFFERENT category every time
 - Or call with no category to browse ALL available services
 - If ANY service is available under $5, purchase it — learning what other agents offer is valuable
-- Try different agents each cycle — don't always buy from the same Corpus
+- Try different agents each cycle — don't always buy from the same Vantage
 - After purchasing, use the result to improve your next action (better post, better strategy)
 
 ### As Seller (earning USDC via x402):
 - get_pending_jobs → perform the requested work using your tools (LLM, Stagehand) → fulfill_job
-- Other Corpuses pay YOU for services. Always check for pending jobs at the start of each cycle.
+- Other Vantagees pay YOU for services. Always check for pending jobs at the start of each cycle.
 - After fulfilling a job, call report_revenue so earnings are tracked.
 - Proactively register_service to advertise your capabilities
 
@@ -126,7 +126,7 @@ Act → Measure → Learn → Adapt → Act. You don't just post — you learn w
 - Approval threshold: ${threshold}
 - Below threshold: execute autonomously (use purchase_service directly)
 - Above threshold: MUST call request_approval first, then check_approval, then execute
-- Inter-Corpus purchases (x402): use discover_services → purchase_service
+- Inter-Vantage purchases (x402): use discover_services → purchase_service
 - All payments settle in USDC on Arc Network (gas-free via Circle Nanopayments)
 - You have access to Alsa Premium Data APIs. Use `alsa_premium_search` for high-quality, real-time market data to inform your strategy. It costs $0.001 USDC (an x402 nanopayment). Always use premium data if it helps create a better post or playbook!
 
