@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { db } from "@/db";
-import { vntCorpus, vntRevenues, vntActivities } from "@/db/schema";
+import { vantageTable, vntRevenues, vntActivities } from "@/db/schema";
 import { sql, eq } from "drizzle-orm";
 import { HeroClient } from "./hero-client";
 
 const FEATURES = [
   {
-    title: "Corpus Genesis",
+    title: "Vantage Genesis",
     desc: "Register your product, launch an autonomous agent corporation. Pulse tokens issued on-chain via Arc.",
     tag: "LAUNCH",
   },
@@ -16,7 +16,7 @@ const FEATURES = [
     tag: "AGENT",
   },
   {
-    title: "Inter-Corpus Commerce",
+    title: "Inter-Vantage Commerce",
     desc: "Agents trade services via x402 nanopayments on Arc. A self-sustaining agent economy.",
     tag: "x402",
   },
@@ -30,8 +30,8 @@ const FEATURES = [
 async function getStats() {
   const [activeCount] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(vntCorpus)
-    .where(eq(vntCorpus.status, "Active"));
+    .from(vantageTable)
+    .where(eq(vantageTable.status, "Active"));
 
   const [revenueSum] = await db
     .select({ total: sql<string>`coalesce(sum(amount), 0)` })
@@ -39,8 +39,8 @@ async function getStats() {
 
   const [agentCount] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(vntCorpus)
-    .where(eq(vntCorpus.agentOnline, true));
+    .from(vantageTable)
+    .where(eq(vantageTable.agentOnline, true));
 
   const [activityCount] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -50,7 +50,7 @@ async function getStats() {
   const fmtRevenue = revenue >= 1000 ? `$${(revenue / 1000).toFixed(1)}K` : `$${revenue.toFixed(0)}`;
 
   return [
-    { label: "Active Corpus", value: String(activeCount.count) },
+    { label: "Active Vantage", value: String(activeCount.count) },
     { label: "Total Revenue", value: fmtRevenue },
     { label: "Agents Running", value: String(agentCount.count) },
     { label: "Activities", value: activityCount.count >= 1000 ? `${(activityCount.count / 1000).toFixed(1)}K` : String(activityCount.count) },
@@ -81,7 +81,7 @@ export default async function Home() {
             href="/launch"
             className="border border-[#3ecf5c] text-[#3ecf5c] bg-transparent px-6 py-3 text-sm font-medium hover:bg-[#3ecf5c]/10 transition-all"
           >
-            Launch Corpus
+            Launch Vantage
           </Link>
           <Link
             href="/agents"
@@ -184,7 +184,7 @@ export default async function Home() {
             href="/launch"
             className="inline-block border border-[#3ecf5c] text-[#3ecf5c] bg-transparent px-8 py-3 text-sm font-medium hover:bg-[#3ecf5c]/10 transition-all"
           >
-            Launch Corpus
+            Launch Vantage
           </Link>
         </div>
       </section>

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { AgentAvatar } from "@/components/agent-avatar";
 
-const TABS = ["Top Corpus", "Top Patrons", "Top Agents", "Trending"] as const;
+const TABS = ["Top Vantage", "Top Patrons", "Top Agents", "Trending"] as const;
 type Tab = (typeof TABS)[number];
 
-interface TopCorpusEntry {
+interface TopVantageEntry {
   rank: number;
   id: string;
   name: string;
@@ -20,7 +20,7 @@ interface TopPatronEntry {
   rank: number;
   wallet: string;
   totalPulse: number;
-  corpusCount: number;
+  vantageCount: number;
   roles: string[];
 }
 
@@ -49,21 +49,21 @@ interface TrendingEntry {
 }
 
 interface Props {
-  topCorpus: TopCorpusEntry[];
+  topVantage: TopVantageEntry[];
   topPatrons: TopPatronEntry[];
   topAgents: TopAgentEntry[];
   trending: TrendingEntry[];
 }
 
-export function LeaderboardClient({ topCorpus, topPatrons, topAgents, trending }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>("Top Corpus");
+export function LeaderboardClient({ topVantage, topPatrons, topAgents, trending }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>("Top Vantage");
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="mb-10">
         <div className="text-sm text-muted mb-2 tracking-wide">// RANKINGS</div>
         <h1 className="text-accent text-2xl font-bold tracking-wide mb-2">Leaderboard</h1>
-        <p className="text-muted text-sm">Rankings across the Corpus ecosystem</p>
+        <p className="text-muted text-sm">Rankings across the Vantage ecosystem</p>
       </div>
 
       <div className="flex gap-6 border-b border-border mb-8">
@@ -82,7 +82,7 @@ export function LeaderboardClient({ topCorpus, topPatrons, topAgents, trending }
         ))}
       </div>
 
-      {activeTab === "Top Corpus" && (
+      {activeTab === "Top Vantage" && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -96,7 +96,7 @@ export function LeaderboardClient({ topCorpus, topPatrons, topAgents, trending }
               </tr>
             </thead>
             <tbody>
-              {topCorpus.map((e) => (
+              {topVantage.map((e) => (
                 <tr key={e.id} className="border-b border-border hover:bg-surface transition-colors even:bg-surface/50">
                   <td className="py-4 pr-6 text-accent font-bold">{e.rank}</td>
                   <td className="py-4 pr-6 text-foreground">
@@ -125,7 +125,7 @@ export function LeaderboardClient({ topCorpus, topPatrons, topAgents, trending }
                 <th className="pb-4 pr-6 font-medium">Wallet</th>
                 <th className="pb-4 pr-6 font-medium">Roles</th>
                 <th className="pb-4 pr-6 font-medium text-right">Total Pulse</th>
-                <th className="pb-4 font-medium text-right">Corpuses</th>
+                <th className="pb-4 font-medium text-right">Vantagees</th>
               </tr>
             </thead>
             <tbody>
@@ -143,7 +143,7 @@ export function LeaderboardClient({ topCorpus, topPatrons, topAgents, trending }
                     </div>
                   </td>
                   <td className="py-4 pr-6 text-right text-foreground tabular-nums">{e.totalPulse.toLocaleString()}</td>
-                  <td className="py-4 text-right text-muted tabular-nums">{e.corpusCount}</td>
+                  <td className="py-4 text-right text-muted tabular-nums">{e.vantageCount}</td>
                 </tr>
               ))}
             </tbody>
