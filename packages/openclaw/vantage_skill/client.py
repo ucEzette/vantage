@@ -1,4 +1,4 @@
-"""Lightweight Corpus API client for OpenClaw skill."""
+"""Lightweight Vantage API client for OpenClaw skill."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from typing import Any
 import httpx
 
 
-class CorpusClient:
-    """Thin wrapper around the Corpus Web API."""
+class VantageClient:
+    """Thin wrapper around the Vantage Web API."""
 
     def __init__(
         self,
@@ -17,7 +17,7 @@ class CorpusClient:
         api_key: str | None = None,
         vantage_id: str | None = None,
     ):
-        self.base_url = (base_url or os.getenv("VANTAGE_API_URL", "https://corpus-protocol-web.vercel.app")).rstrip("/")
+        self.base_url = (base_url or os.getenv("VANTAGE_API_URL", "https://vantage-protocol-web.vercel.app")).rstrip("/")
         self.api_key = api_key or os.getenv("VANTAGE_API_KEY", "")
         self.vantage_id = vantage_id or os.getenv("VANTAGE_ID", "")
         headers: dict[str, str] = {"Content-Type": "application/json"}
@@ -29,21 +29,21 @@ class CorpusClient:
             timeout=30.0,
         )
 
-    # ── Corpus ────────────────────────────────────────────────
+    # ── Vantage ────────────────────────────────────────────────
 
-    async def create_corpus(self, params: dict[str, Any]) -> dict:
-        r = await self._http.post("/api/corpus", json=params)
+    async def create_vantage(self, params: dict[str, Any]) -> dict:
+        r = await self._http.post("/api/vantage", json=params)
         r.raise_for_status()
         return r.json()
 
-    async def get_corpus(self, vantage_id: str | None = None) -> dict:
+    async def get_vantage(self, vantage_id: str | None = None) -> dict:
         cid = vantage_id or self.vantage_id
-        r = await self._http.get(f"/api/corpus/{cid}")
+        r = await self._http.get(f"/api/vantage/{cid}")
         r.raise_for_status()
         return r.json()
 
-    async def get_corpus_me(self) -> dict:
-        r = await self._http.get("/api/corpus/me")
+    async def get_vantage_me(self) -> dict:
+        r = await self._http.get("/api/vantage/me")
         r.raise_for_status()
         return r.json()
 
@@ -51,7 +51,7 @@ class CorpusClient:
 
     async def report_activity(self, type_: str, content: str, channel: str) -> dict:
         r = await self._http.post(
-            f"/api/corpus/{self.vantage_id}/activity",
+            f"/api/vantage/{self.vantage_id}/activity",
             json={"type": type_, "content": content, "channel": channel},
         )
         r.raise_for_status()
@@ -59,7 +59,7 @@ class CorpusClient:
 
     async def report_revenue(self, amount: float, source: str, tx_hash: str | None = None) -> dict:
         r = await self._http.post(
-            f"/api/corpus/{self.vantage_id}/revenue",
+            f"/api/vantage/{self.vantage_id}/revenue",
             json={"amount": amount, "currency": "USDC", "source": source, "txHash": tx_hash},
         )
         r.raise_for_status()
@@ -80,11 +80,11 @@ class CorpusClient:
 
     async def get_service(self, vantage_id: str) -> httpx.Response:
         """GET service — expects 402 with payment details."""
-        return await self._http.get(f"/api/corpus/{vantage_id}/service")
+        return await self._http.get(f"/api/vantage/{vantage_id}/service")
 
     async def purchase_service(self, vantage_id: str, payment_header: str, payload: dict | None = None) -> dict:
         r = await self._http.post(
-            f"/api/corpus/{vantage_id}/service",
+            f"/api/vantage/{vantage_id}/service",
             json={"payload": payload},
             headers={"X-PAYMENT": payment_header},
         )
@@ -93,7 +93,7 @@ class CorpusClient:
 
     async def sign_payment(self, payee: str, amount: int) -> dict:
         r = await self._http.post(
-            f"/api/corpus/{self.vantage_id}/sign",
+            f"/api/vantage/{self.vantage_id}/sign",
             json={"payee": payee, "amount": amount},
         )
         r.raise_for_status()
@@ -117,7 +117,7 @@ class CorpusClient:
 
     async def update_status(self, online: bool) -> None:
         await self._http.patch(
-            f"/api/corpus/{self.vantage_id}/status",
+            f"/api/vantage/{self.vantage_id}/status",
             json={"agentOnline": online},
         )
 

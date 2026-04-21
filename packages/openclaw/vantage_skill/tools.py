@@ -1,4 +1,4 @@
-"""OpenClaw tool functions for Corpus Protocol.
+"""OpenClaw tool functions for Vantage Protocol.
 
 Each function is a standalone tool that OpenClaw can call.
 They use module-level _client which is initialized on first use.
@@ -8,21 +8,21 @@ from __future__ import annotations
 
 from typing import Any
 
-from vantage_skill.client import CorpusClient
+from vantage_skill.client import VantageClient
 
-_client: CorpusClient | None = None
+_client: VantageClient | None = None
 
 
-def _get_client() -> CorpusClient:
+def _get_client() -> VantageClient:
     global _client
     if _client is None:
-        _client = CorpusClient()
+        _client = VantageClient()
     return _client
 
 
-# ── corpus_register ───────────────────────────────────────────
+# ── vantage_register ───────────────────────────────────────────
 
-async def corpus_register(
+async def vantage_register(
     name: str,
     category: str,
     description: str,
@@ -33,9 +33,9 @@ async def corpus_register(
     service_description: str | None = None,
     service_price: float | None = None,
 ) -> dict[str, Any]:
-    """Create a new Corpus (agent corporation) on the network.
+    """Create a new Vantage (agent corporation) on the network.
 
-    Returns the corpus info including a one-time API key.
+    Returns the vantage info including a one-time API key.
     Categories: Marketing, Development, Research, Design, Finance,
                 Analytics, Operations, Sales, Support, Education.
     """
@@ -58,7 +58,7 @@ async def corpus_register(
     if service_price is not None:
         params["servicePrice"] = service_price
 
-    result = await client.create_corpus(params)
+    result = await client.create_vantage(params)
     # Cache the vantage_id and api_key for subsequent calls
     if "id" in result:
         client.vantage_id = result["id"]
@@ -71,17 +71,17 @@ async def corpus_register(
         "name": result.get("name"),
         "api_key": result.get("apiKeyOnce"),
         "wallet_address": result.get("agentWalletAddress"),
-        "message": f"Corpus '{name}' created. Save your API key — it won't be shown again.",
+        "message": f"Vantage '{name}' created. Save your API key — it won't be shown again.",
     }
 
 
-# ── corpus_discover ───────────────────────────────────────────
+# ── vantage_discover ───────────────────────────────────────────
 
-async def corpus_discover(
+async def vantage_discover(
     category: str | None = None,
     target: str | None = None,
 ) -> dict[str, Any]:
-    """Search the Corpus service marketplace.
+    """Search the Vantage service marketplace.
 
     Find services offered by other agents that you can purchase.
     """
@@ -91,7 +91,7 @@ async def corpus_discover(
         "count": len(services),
         "services": [
             {
-                "vantage_id": s.get("corpusId"),
+                "vantage_id": s.get("vantageId"),
                 "name": s.get("serviceName"),
                 "description": s.get("description"),
                 "price": s.get("price"),
@@ -102,14 +102,14 @@ async def corpus_discover(
     }
 
 
-# ── corpus_purchase ───────────────────────────────────────────
+# ── vantage_purchase ───────────────────────────────────────────
 
-async def corpus_purchase(
+async def vantage_purchase(
     vantage_id: str,
     service_type: str | None = None,
     payload: dict | None = None,
 ) -> dict[str, Any]:
-    """Buy a service from another Corpus via x402 nanopayment.
+    """Buy a service from another Vantage via x402 nanopayment.
 
     Handles the full payment flow: GET 402 → sign → POST with payment.
     """
@@ -144,12 +144,12 @@ async def corpus_purchase(
     return {"status": "error", "code": response.status_code, "body": response.text}
 
 
-# ── corpus_fulfill ────────────────────────────────────────────
+# ── vantage_fulfill ────────────────────────────────────────────
 
-async def corpus_fulfill() -> dict[str, Any]:
+async def vantage_fulfill() -> dict[str, Any]:
     """Check for pending incoming jobs and return the next one to work on.
 
-    After completing the work, call corpus_submit_result with the output.
+    After completing the work, call vantage_submit_result with the output.
     """
     client = _get_client()
     jobs = await client.get_pending_jobs()
@@ -163,13 +163,13 @@ async def corpus_fulfill() -> dict[str, Any]:
         "service": job.get("serviceName"),
         "payload": job.get("payload"),
         "amount": job.get("amount"),
-        "message": f"Job '{job.get('serviceName')}' ready. Complete it and call corpus_submit_result.",
+        "message": f"Job '{job.get('serviceName')}' ready. Complete it and call vantage_submit_result.",
     }
 
 
-# ── corpus_submit_result ─────────────────────────────────────
+# ── vantage_submit_result ─────────────────────────────────────
 
-async def corpus_submit_result(
+async def vantage_submit_result(
     job_id: str,
     result: dict,
 ) -> dict[str, Any]:
@@ -193,9 +193,9 @@ async def corpus_submit_result(
     }
 
 
-# ── corpus_report ─────────────────────────────────────────────
+# ── vantage_report ─────────────────────────────────────────────
 
-async def corpus_report(
+async def vantage_report(
     action: str = "activity",
     activity_type: str = "post",
     content: str = "",
@@ -203,7 +203,7 @@ async def corpus_report(
     amount: float | None = None,
     source: str | None = None,
 ) -> dict[str, Any]:
-    """Log an activity or report revenue to the Corpus dashboard.
+    """Log an activity or report revenue to the Vantage dashboard.
 
     action="activity": logs activity_type/content/channel.
       Valid activity_type: post, research, reply, commerce, approval.
@@ -227,27 +227,27 @@ async def corpus_report(
     return {"status": "recorded", "type": "activity", "activity_id": result.get("id")}
 
 
-# ── corpus_status ─────────────────────────────────────────────
+# ── vantage_status ─────────────────────────────────────────────
 
-async def corpus_status() -> dict[str, Any]:
-    """Get your Corpus dashboard summary."""
+async def vantage_status() -> dict[str, Any]:
+    """Get your Vantage dashboard summary."""
     client = _get_client()
-    # Use get_corpus (with ID) to get full detail including relations
-    corpus = await client.get_corpus()
+    # Use get_vantage (with ID) to get full detail including relations
+    vantage = await client.get_vantage()
 
-    revenues = corpus.get("revenues", [])
+    revenues = vantage.get("revenues", [])
     total_revenue = sum(float(r.get("amount", 0)) for r in revenues)
-    services = corpus.get("commerceServices", [])
-    activities = corpus.get("activities", [])
-    pending_approvals = [a for a in corpus.get("approvals", []) if a.get("status") == "pending"]
+    services = vantage.get("commerceServices", [])
+    activities = vantage.get("activities", [])
+    pending_approvals = [a for a in vantage.get("approvals", []) if a.get("status") == "pending"]
 
     return {
-        "name": corpus.get("name"),
-        "status": corpus.get("status"),
-        "agent_online": corpus.get("agentOnline"),
+        "name": vantage.get("name"),
+        "status": vantage.get("status"),
+        "agent_online": vantage.get("agentOnline"),
         "total_revenue_usdc": total_revenue,
         "recent_activities": len(activities),
         "active_services": len(services),
         "pending_approvals": len(pending_approvals),
-        "budget_remaining": corpus.get("gtmBudget"),
+        "budget_remaining": vantage.get("gtmBudget"),
     }
