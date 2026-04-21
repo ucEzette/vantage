@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  vntCorpus,
+  vantageTable,
   vntPatrons,
   vntActivities,
   vntApprovals,
@@ -11,7 +11,7 @@ import {
   vntPlaybookPurchases,
 } from "./schema";
 
-export const corpusRelations = relations(vntCorpus, ({ many, one }) => ({
+export const vantageRelations = relations(vantageTable, ({ many, one }) => ({
   patrons: many(vntPatrons),
   activities: many(vntActivities),
   approvals: many(vntApprovals),
@@ -22,31 +22,31 @@ export const corpusRelations = relations(vntCorpus, ({ many, one }) => ({
 }));
 
 export const patronRelations = relations(vntPatrons, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntPatrons.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntPatrons.vantageId], references: [vantageTable.id] }),
 }));
 
 export const activityRelations = relations(vntActivities, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntActivities.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntActivities.vantageId], references: [vantageTable.id] }),
 }));
 
 export const approvalRelations = relations(vntApprovals, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntApprovals.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntApprovals.vantageId], references: [vantageTable.id] }),
 }));
 
 export const revenueRelations = relations(vntRevenues, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntRevenues.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntRevenues.vantageId], references: [vantageTable.id] }),
 }));
 
 export const commerceServiceRelations = relations(vntCommerceServices, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntCommerceServices.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntCommerceServices.vantageId], references: [vantageTable.id] }),
 }));
 
 export const commerceJobRelations = relations(vntCommerceJobs, ({ one }) => ({
-  corpus: one(vntCorpus, { fields: [vntCommerceJobs.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntCommerceJobs.vantageId], references: [vantageTable.id] }),
 }));
 
 export const playbookRelations = relations(vntPlaybooks, ({ one, many }) => ({
-  corpus: one(vntCorpus, { fields: [vntPlaybooks.corpusId], references: [vntCorpus.id] }),
+  vantage: one(vantageTable, { fields: [vntPlaybooks.vantageId], references: [vantageTable.id] }),
   purchases: many(vntPlaybookPurchases),
 }));
 

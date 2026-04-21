@@ -11,13 +11,12 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-// ─── Corpus (Agent Corporation) ───────────────────────────────────
-
-export const vntCorpus = pgTable(
-  "vnt_corpus",
+// ─── Vantage (Agent Corporation) ───────────────────────────────────
+export const vantageTable = pgTable(
+  "vnt_vantage",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    onChainId: integer("onChainId").unique(),    // Smart contract corpus ID
+    onChainId: integer("onChainId").unique(),    // Smart contract vantage ID
     agentName: text("agentName").unique(),        // Prime Agent identity (e.g. "marketbot" → marketbot.vantage)
     name: text("name").notNull(),
     category: text("category").notNull(),
@@ -74,7 +73,7 @@ export const vntPatrons = pgTable(
   "vnt_patrons",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
     walletAddress: text("walletAddress").notNull(),
     role: text("role").notNull(),
     pulseAmount: integer("pulseAmount").notNull().default(0),
@@ -85,7 +84,7 @@ export const vntPatrons = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date", precision: 3 }).notNull().$onUpdate(() => new Date()),
   },
   (t) => [
-    uniqueIndex("vnt_patrons_corpusId_walletAddress_key").on(t.corpusId, t.walletAddress),
+    uniqueIndex("vnt_patrons_vantageId_walletAddress_key").on(t.vantageId, t.walletAddress),
   ],
 );
 
@@ -95,7 +94,7 @@ export const vntActivities = pgTable(
   "vnt_activities",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     content: text("content").notNull(),
     channel: text("channel").notNull(),
@@ -104,7 +103,7 @@ export const vntActivities = pgTable(
     createdAt: timestamp("createdAt", { mode: "date", precision: 3 }).notNull().defaultNow(),
   },
   (t) => [
-    index("vnt_activities_corpusId_createdAt_idx").on(t.corpusId, t.createdAt),
+    index("vnt_activities_vantageId_createdAt_idx").on(t.vantageId, t.createdAt),
   ],
 );
 
@@ -114,7 +113,7 @@ export const vntApprovals = pgTable(
   "vnt_approvals",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     title: text("title").notNull(),
     description: text("description"),
@@ -129,7 +128,7 @@ export const vntApprovals = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date", precision: 3 }).notNull().$onUpdate(() => new Date()),
   },
   (t) => [
-    index("vnt_approvals_corpusId_status_idx").on(t.corpusId, t.status),
+    index("vnt_approvals_vantageId_status_idx").on(t.vantageId, t.status),
   ],
 );
 
@@ -139,7 +138,7 @@ export const vntRevenues = pgTable(
   "vnt_revenues",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
     amount: numeric("amount", { precision: 18, scale: 6 }).notNull(),
     currency: text("currency").notNull().default("USDC"),
     source: text("source").notNull(),
@@ -148,7 +147,7 @@ export const vntRevenues = pgTable(
     createdAt: timestamp("createdAt", { mode: "date", precision: 3 }).notNull().defaultNow(),
   },
   (t) => [
-    index("vnt_revenues_corpusId_createdAt_idx").on(t.corpusId, t.createdAt),
+    index("vnt_revenues_vantageId_createdAt_idx").on(t.vantageId, t.createdAt),
   ],
 );
 
@@ -158,7 +157,7 @@ export const vntCommerceServices = pgTable(
   "vnt_commerce_services",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().unique().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().unique().references(() => vantageTable.id, { onDelete: "cascade" }),
     serviceName: text("serviceName").notNull(),
     description: text("description"),
     price: numeric("price", { precision: 18, scale: 6 }).notNull(),
@@ -180,8 +179,8 @@ export const vntCommerceJobs = pgTable(
   "vnt_commerce_jobs",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
-    requesterCorpusId: text("requesterCorpusId").notNull(),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
+    requesterVantageId: text("requesterVantageId").notNull(),
     serviceName: text("serviceName").notNull(),
     payload: jsonb("payload"),
     result: jsonb("result"),
@@ -194,7 +193,7 @@ export const vntCommerceJobs = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date", precision: 3 }).notNull().$onUpdate(() => new Date()),
   },
   (t) => [
-    index("vnt_commerce_jobs_corpusId_status_idx").on(t.corpusId, t.status),
+    index("vnt_commerce_jobs_vantageId_status_idx").on(t.vantageId, t.status),
   ],
 );
 
@@ -204,7 +203,7 @@ export const vntPlaybooks = pgTable(
   "vnt_playbooks",
   {
     id: text("id").primaryKey().$defaultFn(() => createId()),
-    corpusId: text("corpusId").notNull().references(() => vntCorpus.id, { onDelete: "cascade" }),
+    vantageId: text("vantageId").notNull().references(() => vantageTable.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     category: text("category").notNull(),
     channel: text("channel").notNull(),
@@ -228,7 +227,7 @@ export const vntPlaybooks = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date", precision: 3 }).notNull().$onUpdate(() => new Date()),
   },
   (t) => [
-    index("vnt_playbooks_corpusId_idx").on(t.corpusId),
+    index("vnt_playbooks_vantageId_idx").on(t.vantageId),
   ],
 );
 
