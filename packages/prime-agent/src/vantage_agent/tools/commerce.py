@@ -1,4 +1,4 @@
-"""Commerce tools — x402 inter-Corpus service marketplace + Playbook trading."""
+"""Commerce tools — x402 inter-Vantage service marketplace + Playbook trading."""
 
 from __future__ import annotations
 
@@ -9,12 +9,12 @@ from vantage_agent.payments.x402_signer import X402Signer
 from vantage_agent.tools.registry import tool
 
 if TYPE_CHECKING:
-    from vantage_agent.api_client import CorpusAPIClient
+    from vantage_agent.api_client import VantageAPIClient
     from vantage_agent.config import Settings
     from vantage_agent.db import LocalDB
 
 # Injected by registry.build_all_tools
-_api: CorpusAPIClient = None  # type: ignore[assignment]
+_api: VantageAPIClient = None  # type: ignore[assignment]
 _db: LocalDB = None  # type: ignore[assignment]
 _settings: Settings = None  # type: ignore[assignment]
 _signer: X402Signer | None = None
@@ -62,7 +62,7 @@ async def discover_services(target: str = "") -> dict:
 
 @tool(
     "purchase_service",
-    "Purchase a service or Playbook from another Corpus via x402 (USDC on Arc). Handles 402→sign→submit flow.",
+    "Purchase a service or Playbook from another Vantage via x402 (USDC on Arc). Handles 402→sign→submit flow.",
 )
 async def purchase_service(vantage_id: str, service_type: str = "", payload: str = "{}") -> dict:
     try:
@@ -71,8 +71,8 @@ async def purchase_service(vantage_id: str, service_type: str = "", payload: str
         payload_dict = {}
 
     # Budget check — refuse if monthly spending would exceed GTM budget
-    corpus_config = _db.get_corpus_config()
-    gtm_budget = float((corpus_config or {}).get("gtmBudget", 200))
+    vantage_config = _db.get_vantage_config()
+    gtm_budget = float((vantage_config or {}).get("gtmBudget", 200))
     spent_month = _db.get_spending_period(30)
     # We'll check against actual price after 402, but pre-check with budget headroom
     if spent_month >= gtm_budget:
@@ -113,7 +113,7 @@ async def purchase_service(vantage_id: str, service_type: str = "", payload: str
         result = await _api.create_approval(
             _settings.vantage_id,
             type_="transaction",
-            title=f"x402 purchase from Corpus {vantage_id}: ${price}",
+            title=f"x402 purchase from Vantage {vantage_id}: ${price}",
             description=f"Service: {service_type}, Payload: {payload}",
             amount=price,
         )
@@ -165,7 +165,7 @@ async def purchase_service(vantage_id: str, service_type: str = "", payload: str
     _db.record_spending(
         amount=float(price),
         category="x402_purchase",
-        description=f"Service from Corpus {vantage_id}: {service_type}",
+        description=f"Service from Vantage {vantage_id}: {service_type}",
     )
 
     # Instant fulfillment: result is already in the response
@@ -207,7 +207,7 @@ async def poll_service_result(job_id: str) -> dict:
         job_result = result.get("result", {})
         if isinstance(job_result, dict) and "templates" in job_result:
             name = job_result.get("name", f"Playbook from job {job_id}")
-            _db.save_playbook(name, job_result, source_corpus=result.get("corpusId"))
+            _db.save_playbook(name, job_result, source_vantage=result.get("vantageId"))
             return {
                 "status": "completed",
                 "type": "playbook",
@@ -245,13 +245,13 @@ async def apply_playbook(playbook_name: str) -> dict:
 
 
 # ══════════════════════��════════════════════════════════════════════
-# Provider-side tools — this Corpus fulfills incoming x402 jobs
+# Provider-side tools — this Vantage fulfills incoming x402 jobs
 # ═══════════════════════════════════════════════════════════════════
 
 
 @tool(
     "get_pending_jobs",
-    "Check for incoming x402 service requests that other Corpuses have purchased from us. Returns pending jobs to fulfill.",
+    "Check for incoming x402 service requests that other Vantagees have purchased from us. Returns pending jobs to fulfill.",
 )
 async def get_pending_jobs() -> dict:
     jobs = await _api.get_pending_jobs()
@@ -261,7 +261,7 @@ async def get_pending_jobs() -> dict:
         {
             "job_id": j.get("id"),
             "service": j.get("serviceName"),
-            "requester": j.get("requesterCorpusId"),
+            "requester": j.get("requesterVantageId"),
             "payload": j.get("payload"),
         }
         for j in jobs
@@ -388,7 +388,7 @@ async def generate_playbook(
 
 @tool(
     "register_service",
-    "Register or update this Corpus's x402 service offering on the marketplace so other agents can discover and purchase it.",
+    "Register or update this Vantage's x402 service offering on the marketplace so other agents can discover and purchase it.",
 )
 async def register_service(
     service_name: str,

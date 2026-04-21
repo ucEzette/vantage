@@ -35,7 +35,7 @@ async function setup(entitySecret) {
   // Create wallet set
   console.log("=== Creating Wallet Set ===");
   try {
-    const res = await client.createWalletSet({ name: "Corpus Agent Wallets" });
+    const res = await client.createWalletSet({ name: "Vantage Agent Wallets" });
     const walletSetId = res.data?.walletSet?.id;
 
     console.log("\n========================================");
