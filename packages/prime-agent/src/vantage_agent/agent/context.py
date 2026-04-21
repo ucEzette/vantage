@@ -20,7 +20,7 @@ class AgentContext:
     last_agent_cycle: str
     recent_content: list[dict]
     active_playbook: dict | None
-    corpus_config: dict
+    vantage_config: dict
     spending_today: float
     spending_month: float
     gtm_budget: float
@@ -30,7 +30,7 @@ class AgentContext:
     unmeasured_count: int
 
     @classmethod
-    def from_db(cls, db: LocalDB, corpus_config: dict) -> AgentContext:
+    def from_db(cls, db: LocalDB, vantage_config: dict) -> AgentContext:
         last_run = db.get_last_run("agent_cycle")
         playbook = db.get_active_playbook()
 
@@ -44,7 +44,7 @@ class AgentContext:
         except Exception:
             pass
 
-        gtm_budget = float(corpus_config.get("gtmBudget", 200))
+        gtm_budget = float(vantage_config.get("gtmBudget", 200))
 
         return cls(
             current_time=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -56,7 +56,7 @@ class AgentContext:
             last_agent_cycle=last_run.isoformat() if last_run else "never",
             recent_content=db.get_recent_content(5),
             active_playbook=playbook,
-            corpus_config=corpus_config,
+            vantage_config=vantage_config,
             spending_today=db.get_spending_today(),
             spending_month=db.get_spending_period(30),
             gtm_budget=gtm_budget,

@@ -33,7 +33,7 @@ def get_openai_client(api_key: str) -> AsyncOpenAI:
 async def agent_loop(
     settings: Settings,
     tools: ToolRegistry,
-    corpus_config: dict,
+    vantage_config: dict,
     context: AgentContext,
     db: LocalDB,
     system_prompt_override: str | None = None,
@@ -42,7 +42,7 @@ async def agent_loop(
     """Run one agent cycle: LLM decides tools to call until done."""
     client = get_openai_client(settings.openai_api_key)
 
-    system_prompt = system_prompt_override or build_system_prompt(corpus_config, context)
+    system_prompt = system_prompt_override or build_system_prompt(vantage_config, context)
     tool_schemas = tools.openai_schemas()
 
     messages: list[dict] = [

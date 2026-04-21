@@ -6,28 +6,28 @@ import "./VantageRegistry.sol";
 /**
  * @title VantageNameService
  * @notice Immutable naming registry for Prime Agent identities on Arc Network.
- *         Each Corpus can register one name (e.g. "marketbot") displayed
+ *         Each Vantage can register one name (e.g. "marketbot") displayed
  *         as "marketbot.vantage". Once set, the name can never be changed.
  */
 contract VantageNameService {
     VantageRegistry public immutable registry;
 
-    // corpusId → name (e.g. "marketbot")
-    mapping(uint256 => string) private _corpusToName;
-    // keccak256(name) → corpusId
-    mapping(bytes32 => uint256) private _nameToCorpus;
-    // corpusId → whether a name has been set
+    // vantageId → name (e.g. "marketbot")
+    mapping(uint256 => string) private _vantageToName;
+    // keccak256(name) → vantageId
+    mapping(bytes32 => uint256) private _nameToVantage;
+    // vantageId → whether a name has been set
     mapping(uint256 => bool) private _nameSet;
 
     // ── Events ───────────────────────────────────────────────────────
-    event NameRegistered(uint256 indexed corpusId, string name);
+    event NameRegistered(uint256 indexed vantageId, string name);
 
     // ── Errors ───────────────────────────────────────────────────────
     error NameAlreadySet();
     error NameTaken();
     error InvalidName();
-    error NotCorpusCreator();
-    error CorpusNotFound();
+    error NotVantageCreator();
+    error VantageNotFound();
 
     // ── Constructor ──────────────────────────────────────────────────
     constructor(address _registry) {
@@ -37,52 +37,52 @@ contract VantageNameService {
     // ── Write ────────────────────────────────────────────────────────
 
     /**
-     * @notice Register a permanent name for a Corpus's Prime Agent.
-     *         Can only be called once per Corpus by the Corpus creator.
-     * @param corpusId The on-chain Corpus ID.
+     * @notice Register a permanent name for a Vantage's Prime Agent.
+     *         Can only be called once per Vantage by the Vantage creator.
+     * @param vantageId The on-chain Vantage ID.
      * @param name     Lowercase alphanumeric + hyphens, 3-32 chars.
      */
-    function registerName(uint256 corpusId, string calldata name) external {
-        // Verify caller is corpus creator
-        address creator = registry.creatorOf(corpusId);
-        if (creator == address(0)) revert CorpusNotFound();
-        if (creator != msg.sender) revert NotCorpusCreator();
+    function registerName(uint256 vantageId, string calldata name) external {
+        // Verify caller is vantage creator
+        address creator = registry.creatorOf(vantageId);
+        if (creator == address(0)) revert VantageNotFound();
+        if (creator != msg.sender) revert NotVantageCreator();
 
         // One-time only
-        if (_nameSet[corpusId]) revert NameAlreadySet();
+        if (_nameSet[vantageId]) revert NameAlreadySet();
 
         // Validate name format
         if (!_isValidName(name)) revert InvalidName();
 
         // Check availability
         bytes32 nameHash = keccak256(bytes(name));
-        if (_nameToCorpus[nameHash] != 0) revert NameTaken();
+        if (_nameToVantage[nameHash] != 0) revert NameTaken();
 
         // Register
-        _corpusToName[corpusId] = name;
-        _nameToCorpus[nameHash] = corpusId;
-        _nameSet[corpusId] = true;
+        _vantageToName[vantageId] = name;
+        _nameToVantage[nameHash] = vantageId;
+        _nameSet[vantageId] = true;
 
-        emit NameRegistered(corpusId, name);
+        emit NameRegistered(vantageId, name);
     }
 
     // ── Read ─────────────────────────────────────────────────────────
 
     function resolveName(string calldata name) external view returns (uint256) {
-        return _nameToCorpus[keccak256(bytes(name))];
+        return _nameToVantage[keccak256(bytes(name))];
     }
 
-    function nameOf(uint256 corpusId) external view returns (string memory) {
-        return _corpusToName[corpusId];
+    function nameOf(uint256 vantageId) external view returns (string memory) {
+        return _vantageToName[vantageId];
     }
 
     function isNameAvailable(string calldata name) external view returns (bool) {
         if (!_isValidName(name)) return false;
-        return _nameToCorpus[keccak256(bytes(name))] == 0;
+        return _nameToVantage[keccak256(bytes(name))] == 0;
     }
 
-    function hasName(uint256 corpusId) external view returns (bool) {
-        return _nameSet[corpusId];
+    function hasName(uint256 vantageId) external view returns (bool) {
+        return _nameSet[vantageId];
     }
 
     // ── Internal ─────────────────────────────────────────────────────
