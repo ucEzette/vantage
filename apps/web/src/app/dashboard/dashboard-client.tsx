@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { WalletGate, useWallet } from "@/components/wallet-gate";
+import { WalletGate } from "@/components/wallet-gate";
+import { useWallet } from "@/components/providers";
 import { WorldIdVerify, WORLD_ACTIONS } from "@/components/world-id-verify";
 import { AgentAvatar } from "@/components/agent-avatar";
 
 interface DashboardData {
   stats: {
     totalValue: string;
-    activeCorpus: number;
+    activeVantage: number;
     totalRevenue: string;
     pendingCount: number;
   };
   approvals: {
     id: string;
-    corpusId: string;
-    corpusName: string;
+    vantageId: string;
+    vantageName: string;
     type: string;
     title: string;
     description: string | null;
@@ -24,8 +25,8 @@ interface DashboardData {
   }[];
   approvalHistory: {
     id: string;
-    corpusId: string;
-    corpusName: string;
+    vantageId: string;
+    vantageName: string;
     type: string;
     title: string;
     description: string | null;
@@ -38,7 +39,7 @@ interface DashboardData {
   }[];
   activities: {
     id: string;
-    corpusName: string;
+    vantageName: string;
     action: string;
     status: string;
     timestamp: string;
@@ -49,13 +50,13 @@ interface DashboardData {
     lastActive: string;
   }[];
   revenueStreams: {
-    corpusId: string;
-    corpusName: string;
+    vantageId: string;
+    vantageName: string;
     totalRevenue: number;
     bySource: Record<string, number>;
     recentTx: { amount: number; source: string; currency: string; date: string }[];
   }[];
-  corpusManagement: {
+  vantageManagement: {
     id: string;
     name: string;
     status: string;
@@ -92,7 +93,7 @@ export function DashboardClient() {
   return (
     <WalletGate
       title="Connect Wallet to Access Dashboard"
-      description="Your patron dashboard shows your portfolio, pending approvals, and agent activity. Connect your wallet to view your Corpus holdings."
+      description="Your patron dashboard shows your portfolio, pending approvals, and agent activity. Connect your wallet to view your Vantage holdings."
     >
       <DashboardLoader />
     </WalletGate>
@@ -189,7 +190,7 @@ function DashboardLoader() {
   return <DashboardContent {...data} onRefresh={fetchData} />;
 }
 
-function ApiKeyCell({ masked, raw }: { corpusId: string; masked: string | null; raw: string | null }) {
+function ApiKeyCell({ masked, raw }: { vantageId: string; masked: string | null; raw: string | null }) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -216,18 +217,18 @@ function ApiKeyCell({ masked, raw }: { corpusId: string; masked: string | null; 
   );
 }
 
-function DashboardContent({ stats, approvals: initialApprovals, approvalHistory: initialHistory, activities, agents, revenueStreams, corpusManagement, onRefresh }: DashboardData & { onRefresh: () => void }) {
+function DashboardContent({ stats, approvals: initialApprovals, approvalHistory: initialHistory, activities, agents, revenueStreams, vantageManagement, onRefresh }: DashboardData & { onRefresh: () => void }) {
   const [approvals, setApprovals] = useState(initialApprovals);
   const [approvalHistory, setApprovalHistory] = useState(initialHistory);
   const [approvalTab, setApprovalTab] = useState<"pending" | "history">("pending");
   const [approvalError, setApprovalError] = useState<string | null>(null);
   const { address } = useWallet();
 
-  async function handleDecision(id: string, corpusId: string, status: "approved" | "rejected", worldIdProof: unknown) {
+  async function handleDecision(id: string, vantageId: string, status: "approved" | "rejected", worldIdProof: unknown) {
     setApprovalError(null);
     const target = approvals.find((a) => a.id === id);
     try {
-      const res = await fetch(`/api/corpus/${corpusId}/approvals/${id}`, {
+      const res = await fetch(`/api/vantage/${vantageId}/approvals/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, decidedBy: address, worldIdProof }),
@@ -256,11 +257,11 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
     }
   }
 
-  const hasNoData = agents.length === 0 && corpusManagement.length === 0;
+  const hasNoData = agents.length === 0 && vantageManagement.length === 0;
 
   const PORTFOLIO_STATS = [
     { label: "Total Value", value: stats.totalValue },
-    { label: "Active Corpus", value: stats.activeCorpus.toString() },
+    { label: "Active Vantage", value: stats.activeVantage.toString() },
     { label: "Total Revenue", value: stats.totalRevenue },
     { label: "Pending Approvals", value: stats.pendingCount.toString() },
   ];
@@ -275,7 +276,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
       {hasNoData ? (
         <div className="bg-surface border border-border p-10 text-center">
           <p className="text-muted text-sm mb-2">No agents found for your wallet.</p>
-          <p className="text-muted text-xs">Create or join a Corpus to see your dashboard.</p>
+          <p className="text-muted text-xs">Create or join a Vantage to see your dashboard.</p>
         </div>
       ) : (
         <>
@@ -328,7 +329,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <TypeBadge type={item.type} />
-                            <span className="text-xs text-muted">{item.corpusName}</span>
+                            <span className="text-xs text-muted">{item.vantageName}</span>
                             {item.amount && <span className="text-xs text-accent">{item.amount}</span>}
                           </div>
                           <p className="text-sm text-foreground truncate">{item.title}</p>
@@ -340,7 +341,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                           <WorldIdVerify
                             action={WORLD_ACTIONS.approve}
                             signal={address ?? undefined}
-                            onSuccess={(proof) => handleDecision(item.id, item.corpusId, "approved", proof)}
+                            onSuccess={(proof) => handleDecision(item.id, item.vantageId, "approved", proof)}
                           >
                             {({ verify, loading: verifying }) => (
                               <button
@@ -355,7 +356,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                           <WorldIdVerify
                             action={WORLD_ACTIONS.approve}
                             signal={address ?? undefined}
-                            onSuccess={(proof) => handleDecision(item.id, item.corpusId, "rejected", proof)}
+                            onSuccess={(proof) => handleDecision(item.id, item.vantageId, "rejected", proof)}
                           >
                             {({ verify, loading: verifying }) => (
                               <button
@@ -385,7 +386,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <TypeBadge type={item.type} />
-                            <span className="text-xs text-muted">{item.corpusName}</span>
+                            <span className="text-xs text-muted">{item.vantageName}</span>
                             {item.amount && <span className="text-xs text-accent">{item.amount}</span>}
                             <span className={`text-xs font-bold ${item.status === "approved" ? "text-green-500" : "text-red-500"}`}>
                               [{item.status.toUpperCase()}]
@@ -458,11 +459,11 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
             ) : (
               <div className="space-y-4">
                 {revenueStreams.map((rs) => (
-                  <div key={rs.corpusId} className="bg-surface border border-border p-6">
+                  <div key={rs.vantageId} className="bg-surface border border-border p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-bold text-accent inline-flex items-center gap-2">
-                        <AgentAvatar name={rs.corpusName} size={18} className="shrink-0" />
-                        {rs.corpusName}
+                        <AgentAvatar name={rs.vantageName} size={18} className="shrink-0" />
+                        {rs.vantageName}
                       </h3>
                       <span className="text-sm text-foreground font-bold">${rs.totalRevenue.toFixed(2)}</span>
                     </div>
@@ -499,7 +500,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
           <section className="mb-10">
             <h2 className="text-sm text-muted mb-4 tracking-wide">// ON-CHAIN STATUS</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {corpusManagement.map((c) => (
+              {vantageManagement.map((c) => (
                 <div key={c.id} className="bg-surface border border-border p-5">
                   <h3 className="text-sm font-bold text-accent mb-3 flex items-center gap-2">
                     <AgentAvatar name={c.name} size={18} className="shrink-0" />
@@ -538,11 +539,11 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
             </div>
           </section>
 
-          {/* Corpus Management */}
+          {/* Vantage Management */}
           <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// CORPUS MANAGEMENT</h2>
+            <h2 className="text-sm text-muted mb-4 tracking-wide">// VANTAGE MANAGEMENT</h2>
             <div className="bg-surface border border-border divide-y divide-border">
-              {corpusManagement.map((c) => (
+              {vantageManagement.map((c) => (
                 <div key={c.id} className="p-5 hover:bg-surface-hover transition-colors">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -580,7 +581,7 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                   <div className="mt-3 pt-3 border-t border-border text-xs">
                     <span className="text-muted">Agent API Key</span>
                     <div className="mt-1">
-                      <ApiKeyCell corpusId={c.id} masked={c.apiKeyMasked} raw={c.apiKeyRaw} />
+                      <ApiKeyCell vantageId={c.id} masked={c.apiKeyMasked} raw={c.apiKeyRaw} />
                     </div>
                   </div>
                 </div>
@@ -612,8 +613,8 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
                       </span>
                       <span className="text-xs text-muted">&middot;</span>
                       <span className="text-xs text-accent inline-flex items-center gap-1">
-                        <AgentAvatar name={item.corpusName} size={14} className="shrink-0" />
-                        {item.corpusName}
+                        <AgentAvatar name={item.vantageName} size={14} className="shrink-0" />
+                        {item.vantageName}
                       </span>
                       <StatusBadge status={item.status} />
                     </div>
