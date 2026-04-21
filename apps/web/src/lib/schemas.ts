@@ -17,9 +17,9 @@ const VALID_APPROVAL_TYPES = [
   "transaction", "strategy", "policy", "channel",
 ] as const;
 
-// --- Corpus ---
+// --- Vantage ---
 
-export const createCorpusSchema = z.object({
+export const createVantageSchema = z.object({
   name: z.string().min(1).max(100),
   category: z.enum(VALID_CATEGORIES),
   description: z.string().min(1).max(2000),

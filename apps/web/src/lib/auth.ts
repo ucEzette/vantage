@@ -1,18 +1,18 @@
 import { NextRequest } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { db } from "@/db";
-import { vntCorpus } from "@/db/schema";
+import { vantageTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 /**
- * Verify API key from Authorization header against the corpus's stored key.
- * Returns the corpus if valid, or a Response error to return early.
+ * Verify API key from Authorization header against the vantage's stored key.
+ * Returns the vantage if valid, or a Response error to return early.
  */
 export async function verifyAgentApiKey(
   request: NextRequest,
-  corpusId: string
+  vantageId: string
 ): Promise<
-  | { ok: true; corpus: { id: string; apiKey: string | null } }
+  | { ok: true; vantage: { id: string; apiKey: string | null } }
   | { ok: false; response: Response }
 > {
   const authHeader = request.headers.get("authorization");
@@ -29,24 +29,24 @@ export async function verifyAgentApiKey(
 
   const token = authHeader.slice(7);
 
-  const corpus = await db
-    .select({ id: vntCorpus.id, apiKey: vntCorpus.apiKey })
-    .from(vntCorpus)
-    .where(eq(vntCorpus.id, corpusId))
+  const vantage = await db
+    .select({ id: vantageTable.id, apiKey: vantageTable.apiKey })
+    .from(vantageTable)
+    .where(eq(vantageTable.id, vantageId))
     .limit(1)
     .then((r) => r[0] ?? null);
 
-  if (!corpus) {
+  if (!vantage) {
     return {
       ok: false,
-      response: Response.json({ error: "Corpus not found" }, { status: 404 }),
+      response: Response.json({ error: "Vantage not found" }, { status: 404 }),
     };
   }
 
   if (
-    !corpus.apiKey ||
-    corpus.apiKey.length !== token.length ||
-    !timingSafeEqual(Buffer.from(corpus.apiKey), Buffer.from(token))
+    !vantage.apiKey ||
+    vantage.apiKey.length !== token.length ||
+    !timingSafeEqual(Buffer.from(vantage.apiKey), Buffer.from(token))
   ) {
     return {
       ok: false,
@@ -54,5 +54,5 @@ export async function verifyAgentApiKey(
     };
   }
 
-  return { ok: true, corpus };
+  return { ok: true, vantage };
 }

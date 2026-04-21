@@ -25,7 +25,7 @@ function getClient() {
 }
 
 /**
- * Create a new agent wallet on Arc (called during Corpus Genesis).
+ * Create a new agent wallet on Arc (called during Vantage Genesis).
  * Returns { walletId, address }.
  */
 export async function createAgentWallet(): Promise<{
@@ -94,7 +94,7 @@ export async function requestTestnetFunding(address: string): Promise<void> {
 
 /**
  * Sign EIP-3009 transferWithAuthorization via Circle MPC.
- * Agent calls this through POST /api/corpus/:id/sign.
+ * Agent calls this through POST /api/vantage/:id/sign.
  */
 export async function signPayment(
   walletId: string,
