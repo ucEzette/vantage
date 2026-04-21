@@ -6,7 +6,7 @@ import "./PulseToken.sol";
 /**
  * @title VantageRegistry
  * @notice On-chain registry for Vantage Protocol on Arc Network.
- *         Each Corpus is an AI agent corporation with Patron (governance),
+ *         Each Vantage is an AI agent corporation with Patron (governance),
  *         Kernel (policies), and Pulse (ERC-20 token) configs.
  *
  *         On creation, the contract deploys a new PulseToken (ERC-20),
@@ -39,7 +39,7 @@ contract VantageRegistry {
         uint256 priceUsdCents;   // USD cents per Pulse
     }
 
-    struct Corpus {
+    struct Vantage {
         uint256 id;
         string name;
         string category;
@@ -53,30 +53,30 @@ contract VantageRegistry {
 
     // ── State ────────────────────────────────────────────────────────
     address public immutable vantageProtocolWallet;
-    mapping(uint256 => Corpus) private _corpuses;
-    uint256 public nextCorpusId = 1; // start from 1, 0 = nonexistent
+    mapping(uint256 => Vantage) private _vantagees;
+    uint256 public nextVantageId = 1; // start from 1, 0 = nonexistent
 
     // ── Events ───────────────────────────────────────────────────────
-    event CorpusCreated(
-        uint256 indexed corpusId,
+    event VantageCreated(
+        uint256 indexed vantageId,
         address indexed creator,
         string name
     );
     event PulseTokenCreated(
-        uint256 indexed corpusId,
+        uint256 indexed vantageId,
         address tokenAddress,
         uint256 totalSupply,
         uint256 protocolFee
     );
-    event PatronUpdated(uint256 indexed corpusId);
-    event KernelUpdated(uint256 indexed corpusId);
-    event PulseUpdated(uint256 indexed corpusId);
-    event CorpusDeactivated(uint256 indexed corpusId);
+    event PatronUpdated(uint256 indexed vantageId);
+    event KernelUpdated(uint256 indexed vantageId);
+    event PulseUpdated(uint256 indexed vantageId);
+    event VantageDeactivated(uint256 indexed vantageId);
 
     // ── Errors ───────────────────────────────────────────────────────
     error NotCreator();
-    error CorpusNotFound();
-    error CorpusInactive();
+    error VantageNotFound();
+    error VantageInactive();
     error InvalidShares();
     error InvalidAddress();
     error EmptyName();
@@ -88,28 +88,28 @@ contract VantageRegistry {
     }
 
     // ── Modifiers ────────────────────────────────────────────────────
-    modifier onlyCreator(uint256 corpusId) {
-        if (_corpuses[corpusId].creator == address(0)) revert CorpusNotFound();
-        if (_corpuses[corpusId].creator != msg.sender) revert NotCreator();
+    modifier onlyCreator(uint256 vantageId) {
+        if (_vantagees[vantageId].creator == address(0)) revert VantageNotFound();
+        if (_vantagees[vantageId].creator != msg.sender) revert NotCreator();
         _;
     }
 
-    modifier corpusActive(uint256 corpusId) {
-        if (!_corpuses[corpusId].active) revert CorpusInactive();
+    modifier vantageActive(uint256 vantageId) {
+        if (!_vantagees[vantageId].active) revert VantageInactive();
         _;
     }
 
     // ── Write Functions ──────────────────────────────────────────────
 
     /**
-     * @notice Register a new Corpus (Genesis).
+     * @notice Register a new Vantage (Genesis).
      *         Deploys an ERC-20 PulseToken, sends 3% launchpad fee to the
      *         protocol wallet, and transfers 97% to the Creator.
      * @param tokenName  Name for the Pulse token (e.g. "ImageGen Pulse")
      * @param tokenSymbol Symbol for the Pulse token (e.g. "IMGS")
-     * @return corpusId The on-chain ID of the newly created Corpus.
+     * @return vantageId The on-chain ID of the newly created Vantage.
      */
-    function createCorpus(
+    function createVantage(
         string calldata name,
         string calldata category,
         PatronConfig calldata patron,
@@ -117,13 +117,13 @@ contract VantageRegistry {
         PulseConfig calldata pulse,
         string calldata tokenName,
         string calldata tokenSymbol
-    ) external returns (uint256 corpusId) {
+    ) external returns (uint256 vantageId) {
         if (bytes(name).length == 0) revert EmptyName();
         if (bytes(tokenName).length == 0) revert EmptyTokenName();
         _validateShares(patron);
         _validateAddresses(patron);
 
-        corpusId = nextCorpusId++;
+        vantageId = nextVantageId++;
 
         // 1. Deploy ERC-20 PulseToken (minted to this contract)
         PulseToken token = new PulseToken(
@@ -143,9 +143,9 @@ contract VantageRegistry {
         token.transfer(vantageProtocolWallet, fee);
         token.transfer(patron.creatorAddr, creatorAmount);
 
-        // 3. Store corpus
-        Corpus storage c = _corpuses[corpusId];
-        c.id = corpusId;
+        // 3. Store vantage
+        Vantage storage c = _vantagees[vantageId];
+        c.id = vantageId;
         c.name = name;
         c.category = category;
         c.creator = msg.sender;
@@ -156,32 +156,32 @@ contract VantageRegistry {
         c.createdAt = block.timestamp;
         c.active = true;
 
-        emit CorpusCreated(corpusId, msg.sender, name);
-        emit PulseTokenCreated(corpusId, tokenAddr, pulse.totalSupply, fee);
+        emit VantageCreated(vantageId, msg.sender, name);
+        emit PulseTokenCreated(vantageId, tokenAddr, pulse.totalSupply, fee);
     }
 
     /**
      * @notice Update Patron (governance structure). Creator only.
      */
     function updatePatron(
-        uint256 corpusId,
+        uint256 vantageId,
         PatronConfig calldata patron
-    ) external onlyCreator(corpusId) corpusActive(corpusId) {
+    ) external onlyCreator(vantageId) vantageActive(vantageId) {
         _validateShares(patron);
         _validateAddresses(patron);
-        _corpuses[corpusId].patron = patron;
-        emit PatronUpdated(corpusId);
+        _vantagees[vantageId].patron = patron;
+        emit PatronUpdated(vantageId);
     }
 
     /**
      * @notice Update Kernel (governance policies). Creator only.
      */
     function updateKernel(
-        uint256 corpusId,
+        uint256 vantageId,
         KernelConfig calldata kernel
-    ) external onlyCreator(corpusId) corpusActive(corpusId) {
-        _corpuses[corpusId].kernel = kernel;
-        emit KernelUpdated(corpusId);
+    ) external onlyCreator(vantageId) vantageActive(vantageId) {
+        _vantagees[vantageId].kernel = kernel;
+        emit KernelUpdated(vantageId);
     }
 
     /**
@@ -189,36 +189,36 @@ contract VantageRegistry {
      *         Creator only.
      */
     function updatePulse(
-        uint256 corpusId,
+        uint256 vantageId,
         PulseConfig calldata pulse
-    ) external onlyCreator(corpusId) corpusActive(corpusId) {
-        _corpuses[corpusId].pulse = pulse;
-        emit PulseUpdated(corpusId);
+    ) external onlyCreator(vantageId) vantageActive(vantageId) {
+        _vantagees[vantageId].pulse = pulse;
+        emit PulseUpdated(vantageId);
     }
 
     /**
-     * @notice Deactivate a Corpus. Creator only. Irreversible.
+     * @notice Deactivate a Vantage. Creator only. Irreversible.
      */
-    function deactivateCorpus(
-        uint256 corpusId
-    ) external onlyCreator(corpusId) corpusActive(corpusId) {
-        _corpuses[corpusId].active = false;
-        emit CorpusDeactivated(corpusId);
+    function deactivateVantage(
+        uint256 vantageId
+    ) external onlyCreator(vantageId) vantageActive(vantageId) {
+        _vantagees[vantageId].active = false;
+        emit VantageDeactivated(vantageId);
     }
 
     // ── Read Functions ───────────────────────────────────────────────
 
-    function getCorpus(uint256 corpusId) external view returns (Corpus memory) {
-        if (_corpuses[corpusId].creator == address(0)) revert CorpusNotFound();
-        return _corpuses[corpusId];
+    function getVantage(uint256 vantageId) external view returns (Vantage memory) {
+        if (_vantagees[vantageId].creator == address(0)) revert VantageNotFound();
+        return _vantagees[vantageId];
     }
 
-    function isActive(uint256 corpusId) external view returns (bool) {
-        return _corpuses[corpusId].active;
+    function isActive(uint256 vantageId) external view returns (bool) {
+        return _vantagees[vantageId].active;
     }
 
-    function creatorOf(uint256 corpusId) external view returns (address) {
-        return _corpuses[corpusId].creator;
+    function creatorOf(uint256 vantageId) external view returns (address) {
+        return _vantagees[vantageId].creator;
     }
 
     // ── Internal ─────────────────────────────────────────────────────
