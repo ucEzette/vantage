@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+dist/
+out/
+*.tsbuildinfo
+.DS_Store
+*.pem
+.vercel
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+vantage-agent.db
+.gstack/
