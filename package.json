@@ -1,0 +1,23 @@
+{
+  "name": "vantage-protocol",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "contracts",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "lint": "npm run lint -w web",
+    "seed": "npm run db:seed -w web",
+    "deploy:contracts": "npm run deploy:testnet -w @vantage/contracts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.3.0",
+    "esbuild": "^0.28.0"
+  }
+}
