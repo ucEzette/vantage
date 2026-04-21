@@ -8,12 +8,12 @@ from vantage_agent.tools.registry import tool
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from vantage_agent.api_client import CorpusAPIClient
+    from vantage_agent.api_client import VantageAPIClient
     from vantage_agent.config import Settings
     from vantage_agent.db import LocalDB
 
 # Injected by registry.build_all_tools
-_api: CorpusAPIClient = None  # type: ignore[assignment]
+_api: VantageAPIClient = None  # type: ignore[assignment]
 _db: LocalDB = None  # type: ignore[assignment]
 _settings: Settings = None  # type: ignore[assignment]
 _signer: X402Signer | None = None
@@ -33,8 +33,8 @@ def _get_signer() -> X402Signer:
 )
 async def alsa_premium_search(query: str, data_type: str = "web_search", limit: int = 5) -> dict:
     # Check budget
-    corpus_config = _db.get_corpus_config()
-    gtm_budget = float((corpus_config or {}).get("gtmBudget", 200))
+    vantage_config = _db.get_vantage_config()
+    gtm_budget = float((vantage_config or {}).get("gtmBudget", 200))
     spent_month = _db.get_spending_period(30)
     
     price = 0.001
