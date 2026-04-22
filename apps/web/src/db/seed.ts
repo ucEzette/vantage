@@ -26,8 +26,18 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
+const schema = {
+  vantageTable,
+  vntPatrons,
+  vntActivities,
+  vntRevenues,
+  vntCommerceServices,
+  vntCommerceJobs,
+  vntPlaybooks,
+};
+
 const pool = new Pool({ connectionString: DATABASE_URL });
-const db = drizzle(pool);
+const db = drizzle(pool, { schema });
 
 // ── Demo Addresses (Arc Testnet) ────────────────────────────
 const ADDR = {

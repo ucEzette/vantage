@@ -10,18 +10,18 @@ function api(path: string, init?: RequestInit) {
 }
 
 // Shared state across the test flow
-let corpusId: string;
+let vantageId: string;
 let apiKey: string;
 let approvalId: string;
 let playbookId: string;
 
 // ────────────────────────────────────────────
-// 1. Corpus CRUD
+// 1. Vantage CRUD
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus — create", () => {
-  it("creates a corpus and returns apiKeyOnce", async () => {
-    const res = await api("/api/corpus", {
+describe("POST /api/vantage — create", () => {
+  it("creates a vantage and returns apiKeyOnce", async () => {
+    const res = await api("/api/vantage", {
       method: "POST",
       body: JSON.stringify({
         name: "E2E Test Agent",
@@ -42,12 +42,12 @@ describe("POST /api/corpus — create", () => {
     expect(body.apiKeyOnce).toBeDefined();
     expect(typeof body.apiKeyOnce).toBe("string");
 
-    corpusId = body.id;
+    vantageId = body.id;
     apiKey = body.apiKeyOnce;
   });
 
   it("rejects invalid category", async () => {
-    const res = await api("/api/corpus", {
+    const res = await api("/api/vantage", {
       method: "POST",
       body: JSON.stringify({
         name: "Bad",
@@ -59,7 +59,7 @@ describe("POST /api/corpus — create", () => {
   });
 
   it("rejects missing required fields", async () => {
-    const res = await api("/api/corpus", {
+    const res = await api("/api/vantage", {
       method: "POST",
       body: JSON.stringify({ name: "Incomplete" }),
     });
@@ -68,15 +68,15 @@ describe("POST /api/corpus — create", () => {
 
 });
 
-describe("GET /api/corpus — list", () => {
-  it("returns an array including the created corpus", async () => {
-    const res = await api("/api/corpus");
+describe("GET /api/vantage — list", () => {
+  it("returns an array including the created vantage", async () => {
+    const res = await api("/api/vantage");
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
 
-    const found = body.find((c: { id: string }) => c.id === corpusId);
+    const found = body.find((c: { id: string }) => c.id === vantageId);
     expect(found).toBeDefined();
     expect(found.name).toBe("E2E Test Agent");
     // apiKey should NOT be exposed in list
@@ -84,13 +84,13 @@ describe("GET /api/corpus — list", () => {
   });
 });
 
-describe("GET /api/corpus/:id — detail", () => {
-  it("returns full corpus with relations", async () => {
-    const res = await api(`/api/corpus/${corpusId}`);
+describe("GET /api/vantage/:id — detail", () => {
+  it("returns full vantage with relations", async () => {
+    const res = await api(`/api/vantage/${vantageId}`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.id).toBe(corpusId);
+    expect(body.id).toBe(vantageId);
     expect(body.name).toBe("E2E Test Agent");
     expect(Array.isArray(body.patrons)).toBe(true);
     expect(Array.isArray(body.activities)).toBe(true);
@@ -99,7 +99,7 @@ describe("GET /api/corpus/:id — detail", () => {
   });
 
   it("returns 404 for non-existent id", async () => {
-    const res = await api("/api/corpus/nonexistent_id_12345");
+    const res = await api("/api/vantage/nonexistent_id_12345");
     expect(res.status).toBe(404);
   });
 });
@@ -108,9 +108,9 @@ describe("GET /api/corpus/:id — detail", () => {
 // 2. Activity (agent reporting)
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus/:id/activity — report activity", () => {
+describe("POST /api/vantage/:id/activity — report activity", () => {
   it("rejects without auth", async () => {
-    const res = await api(`/api/corpus/${corpusId}/activity`, {
+    const res = await api(`/api/vantage/${vantageId}/activity`, {
       method: "POST",
       body: JSON.stringify({
         type: "post",
@@ -122,7 +122,7 @@ describe("POST /api/corpus/:id/activity — report activity", () => {
   });
 
   it("rejects with wrong api key", async () => {
-    const res = await api(`/api/corpus/${corpusId}/activity`, {
+    const res = await api(`/api/vantage/${vantageId}/activity`, {
       method: "POST",
       headers: { Authorization: "Bearer wrong_key_here" },
       body: JSON.stringify({
@@ -135,7 +135,7 @@ describe("POST /api/corpus/:id/activity — report activity", () => {
   });
 
   it("creates activity with valid api key", async () => {
-    const res = await api(`/api/corpus/${corpusId}/activity`, {
+    const res = await api(`/api/vantage/${vantageId}/activity`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
@@ -148,13 +148,13 @@ describe("POST /api/corpus/:id/activity — report activity", () => {
 
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.corpusId).toBe(corpusId);
+    expect(body.vantageId).toBe(vantageId);
     expect(body.type).toBe("post");
     expect(body.channel).toBe("X");
   });
 
   it("rejects invalid activity type", async () => {
-    const res = await api(`/api/corpus/${corpusId}/activity`, {
+    const res = await api(`/api/vantage/${vantageId}/activity`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
@@ -167,9 +167,9 @@ describe("POST /api/corpus/:id/activity — report activity", () => {
   });
 });
 
-describe("GET /api/corpus/:id/activity — list activities", () => {
-  it("returns activities for the corpus", async () => {
-    const res = await api(`/api/corpus/${corpusId}/activity`);
+describe("GET /api/vantage/:id/activity — list activities", () => {
+  it("returns activities for the vantage", async () => {
+    const res = await api(`/api/vantage/${vantageId}/activity`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -183,9 +183,9 @@ describe("GET /api/corpus/:id/activity — list activities", () => {
 // 3. Agent status
 // ────────────────────────────────────────────
 
-describe("PATCH /api/corpus/:id/status — agent heartbeat", () => {
+describe("PATCH /api/vantage/:id/status — agent heartbeat", () => {
   it("rejects without auth", async () => {
-    const res = await api(`/api/corpus/${corpusId}/status`, {
+    const res = await api(`/api/vantage/${vantageId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ agentOnline: true }),
     });
@@ -193,7 +193,7 @@ describe("PATCH /api/corpus/:id/status — agent heartbeat", () => {
   });
 
   it("sets agent online", async () => {
-    const res = await api(`/api/corpus/${corpusId}/status`, {
+    const res = await api(`/api/vantage/${vantageId}/status`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ agentOnline: true }),
@@ -206,7 +206,7 @@ describe("PATCH /api/corpus/:id/status — agent heartbeat", () => {
   });
 
   it("sets agent offline", async () => {
-    const res = await api(`/api/corpus/${corpusId}/status`, {
+    const res = await api(`/api/vantage/${vantageId}/status`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ agentOnline: false }),
@@ -221,24 +221,24 @@ describe("PATCH /api/corpus/:id/status — agent heartbeat", () => {
 // 3.5 Patrons (Become Patron / Withdraw)
 // ────────────────────────────────────────────
 
-describe("GET /api/corpus/:id/patrons — list patrons", () => {
+describe("GET /api/vantage/:id/patrons — list patrons", () => {
   it("returns empty list initially", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`);
+    const res = await api(`/api/vantage/${vantageId}/patrons`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
   });
 
-  it("returns 404 for non-existent corpus", async () => {
-    const res = await api("/api/corpus/nonexistent_12345/patrons");
+  it("returns 404 for non-existent vantage", async () => {
+    const res = await api("/api/vantage/nonexistent_12345/patrons");
     expect(res.status).toBe(404);
   });
 });
 
-describe("POST /api/corpus/:id/patrons — become patron", () => {
+describe("POST /api/vantage/:id/patrons — become patron", () => {
   it("rejects without walletAddress", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ pulseAmount: 1000 }),
     });
@@ -246,7 +246,7 @@ describe("POST /api/corpus/:id/patrons — become patron", () => {
   });
 
   it("rejects without pulseAmount", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON" }),
     });
@@ -255,7 +255,7 @@ describe("POST /api/corpus/:id/patrons — become patron", () => {
 
   it("rejects when below minimum threshold", async () => {
     // Default min = totalSupply(500_000) * 0.001 = 500
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON", pulseAmount: 100 }),
     });
@@ -267,14 +267,14 @@ describe("POST /api/corpus/:id/patrons — become patron", () => {
   });
 
   it("registers as patron when meeting threshold", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON", pulseAmount: 1000 }),
     });
     expect(res.status).toBe(201);
 
     const body = await res.json();
-    expect(body.corpusId).toBe(corpusId);
+    expect(body.vantageId).toBe(vantageId);
     expect(body.walletAddress).toBe("0xE2E_PATRON");
     expect(body.role).toBe("Investor");
     expect(body.status).toBe("active");
@@ -282,15 +282,15 @@ describe("POST /api/corpus/:id/patrons — become patron", () => {
   });
 
   it("rejects duplicate patron registration", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON", pulseAmount: 1000 }),
     });
     expect(res.status).toBe(409);
   });
 
-  it("returns 404 for non-existent corpus", async () => {
-    const res = await api("/api/corpus/nonexistent_12345/patrons", {
+  it("returns 404 for non-existent vantage", async () => {
+    const res = await api("/api/vantage/nonexistent_12345/patrons", {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON", pulseAmount: 1000 }),
     });
@@ -298,9 +298,9 @@ describe("POST /api/corpus/:id/patrons — become patron", () => {
   });
 });
 
-describe("GET /api/corpus/:id/patrons — list after registration", () => {
+describe("GET /api/vantage/:id/patrons — list after registration", () => {
   it("includes the registered patron", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`);
+    const res = await api(`/api/vantage/${vantageId}/patrons`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -312,9 +312,9 @@ describe("GET /api/corpus/:id/patrons — list after registration", () => {
   });
 });
 
-describe("DELETE /api/corpus/:id/patrons — withdraw patron", () => {
+describe("DELETE /api/vantage/:id/patrons — withdraw patron", () => {
   it("rejects without walletAddress", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "DELETE",
       body: JSON.stringify({}),
     });
@@ -322,7 +322,7 @@ describe("DELETE /api/corpus/:id/patrons — withdraw patron", () => {
   });
 
   it("returns 404 for non-patron wallet", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "DELETE",
       body: JSON.stringify({ walletAddress: "0xNOBODY" }),
     });
@@ -330,7 +330,7 @@ describe("DELETE /api/corpus/:id/patrons — withdraw patron", () => {
   });
 
   it("withdraws patron status", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "DELETE",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON" }),
     });
@@ -341,7 +341,7 @@ describe("DELETE /api/corpus/:id/patrons — withdraw patron", () => {
   });
 
   it("can re-register after withdrawal", async () => {
-    const res = await api(`/api/corpus/${corpusId}/patrons`, {
+    const res = await api(`/api/vantage/${vantageId}/patrons`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xE2E_PATRON", pulseAmount: 2000 }),
     });
@@ -357,9 +357,9 @@ describe("DELETE /api/corpus/:id/patrons — withdraw patron", () => {
 // 4. Approvals
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus/:id/approvals — create approval", () => {
+describe("POST /api/vantage/:id/approvals — create approval", () => {
   it("creates a pending approval", async () => {
-    const res = await api(`/api/corpus/${corpusId}/approvals`, {
+    const res = await api(`/api/vantage/${vantageId}/approvals`, {
       method: "POST",
       body: JSON.stringify({
         type: "transaction",
@@ -371,7 +371,7 @@ describe("POST /api/corpus/:id/approvals — create approval", () => {
 
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.corpusId).toBe(corpusId);
+    expect(body.vantageId).toBe(vantageId);
     expect(body.type).toBe("transaction");
     expect(body.status).toBe("pending");
 
@@ -379,7 +379,7 @@ describe("POST /api/corpus/:id/approvals — create approval", () => {
   });
 
   it("rejects invalid approval type", async () => {
-    const res = await api(`/api/corpus/${corpusId}/approvals`, {
+    const res = await api(`/api/vantage/${vantageId}/approvals`, {
       method: "POST",
       body: JSON.stringify({
         type: "invalid_type",
@@ -390,7 +390,7 @@ describe("POST /api/corpus/:id/approvals — create approval", () => {
   });
 
   it("rejects negative amount", async () => {
-    const res = await api(`/api/corpus/${corpusId}/approvals`, {
+    const res = await api(`/api/vantage/${vantageId}/approvals`, {
       method: "POST",
       body: JSON.stringify({
         type: "transaction",
@@ -402,9 +402,9 @@ describe("POST /api/corpus/:id/approvals — create approval", () => {
   });
 });
 
-describe("GET /api/corpus/:id/approvals — list approvals", () => {
+describe("GET /api/vantage/:id/approvals — list approvals", () => {
   it("returns approvals including the one we created", async () => {
-    const res = await api(`/api/corpus/${corpusId}/approvals`, {
+    const res = await api(`/api/vantage/${vantageId}/approvals`, {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
     expect(res.status).toBe(200);
@@ -418,10 +418,10 @@ describe("GET /api/corpus/:id/approvals — list approvals", () => {
   });
 });
 
-describe("PATCH /api/corpus/:id/approvals/:approvalId — decide", () => {
+describe("PATCH /api/vantage/:id/approvals/:approvalId — decide", () => {
   it("rejects invalid status", async () => {
     const res = await api(
-      `/api/corpus/${corpusId}/approvals/${approvalId}`,
+      `/api/vantage/${vantageId}/approvals/${approvalId}`,
       {
         method: "PATCH",
         body: JSON.stringify({ status: "maybe" }),
@@ -432,7 +432,7 @@ describe("PATCH /api/corpus/:id/approvals/:approvalId — decide", () => {
 
   it("approves the approval", async () => {
     const res = await api(
-      `/api/corpus/${corpusId}/approvals/${approvalId}`,
+      `/api/vantage/${vantageId}/approvals/${approvalId}`,
       {
         method: "PATCH",
         body: JSON.stringify({
@@ -454,9 +454,9 @@ describe("PATCH /api/corpus/:id/approvals/:approvalId — decide", () => {
 // 5. Revenue
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus/:id/revenue — report revenue", () => {
+describe("POST /api/vantage/:id/revenue — report revenue", () => {
   it("rejects without auth", async () => {
-    const res = await api(`/api/corpus/${corpusId}/revenue`, {
+    const res = await api(`/api/vantage/${vantageId}/revenue`, {
       method: "POST",
       body: JSON.stringify({
         amount: 100,
@@ -467,7 +467,7 @@ describe("POST /api/corpus/:id/revenue — report revenue", () => {
   });
 
   it("records revenue with valid api key", async () => {
-    const res = await api(`/api/corpus/${corpusId}/revenue`, {
+    const res = await api(`/api/vantage/${vantageId}/revenue`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
@@ -480,14 +480,14 @@ describe("POST /api/corpus/:id/revenue — report revenue", () => {
 
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.corpusId).toBe(corpusId);
+    expect(body.vantageId).toBe(vantageId);
     expect(body.source).toBe("commerce");
     expect(body.txHash).toBe("0xE2E_TEST_TX");
     expect(parseFloat(body.amount)).toBeCloseTo(250.5);
   });
 
   it("rejects invalid source", async () => {
-    const res = await api(`/api/corpus/${corpusId}/revenue`, {
+    const res = await api(`/api/vantage/${vantageId}/revenue`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ amount: 10, source: "invalid_source" }),
@@ -496,7 +496,7 @@ describe("POST /api/corpus/:id/revenue — report revenue", () => {
   });
 
   it("rejects zero or negative amount", async () => {
-    const res = await api(`/api/corpus/${corpusId}/revenue`, {
+    const res = await api(`/api/vantage/${vantageId}/revenue`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ amount: 0, source: "commerce" }),
@@ -510,14 +510,14 @@ describe("POST /api/corpus/:id/revenue — report revenue", () => {
 // ────────────────────────────────────────────
 
 describe("GET /api/leaderboard", () => {
-  it("returns ranked corpus list", async () => {
+  it("returns ranked vantage list", async () => {
     const res = await api("/api/leaderboard");
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
 
-    const found = body.find((c: { id: string }) => c.id === corpusId);
+    const found = body.find((c: { id: string }) => c.id === vantageId);
     expect(found).toBeDefined();
     expect(found.name).toBe("E2E Test Agent");
     expect(typeof found.totalRevenue).toBe("number");
@@ -595,7 +595,7 @@ describe("POST /api/playbooks — create playbook", () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.title).toBe("E2E Test Playbook");
-    expect(body.corpusId).toBe(corpusId);
+    expect(body.vantageId).toBe(vantageId);
     expect(body.status).toBe("active");
     expect(body.tags).toEqual(["e2e", "test"]);
 
@@ -614,7 +614,7 @@ describe("GET /api/playbooks — list playbooks", () => {
     const found = body.find((p: { id: string }) => p.id === playbookId);
     expect(found).toBeDefined();
     expect(found.title).toBe("E2E Test Playbook");
-    expect(found.corpus).toBe("E2E Test Agent");
+    expect(found.vantage).toBe("E2E Test Agent");
     expect(typeof found.purchases).toBe("number");
   });
 
@@ -636,13 +636,13 @@ describe("GET /api/playbooks — list playbooks", () => {
 });
 
 describe("GET /api/playbooks/:id — playbook detail", () => {
-  it("returns playbook with corpus name", async () => {
+  it("returns playbook with vantage name", async () => {
     const res = await api(`/api/playbooks/${playbookId}`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(body.id).toBe(playbookId);
-    expect(body.corpus).toBe("E2E Test Agent");
+    expect(body.vantage).toBe("E2E Test Agent");
     expect(typeof body.purchases).toBe("number");
   });
 
@@ -776,7 +776,7 @@ describe("GET /api/leaderboard", () => {
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
 
-    const found = body.find((c: { id: string }) => c.id === corpusId);
+    const found = body.find((c: { id: string }) => c.id === vantageId);
     expect(found).toBeDefined();
     expect(typeof found.patronCount).toBe("number");
     expect(typeof found.activityCount).toBe("number");
@@ -832,9 +832,9 @@ describe("GET /api/dashboard", () => {
   });
 });
 
-describe("GET /api/corpus — pagination", () => {
+describe("GET /api/vantage — pagination", () => {
   it("returns paginated data with nextCursor", async () => {
-    const res = await api("/api/corpus?limit=1");
+    const res = await api("/api/vantage?limit=1");
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -852,9 +852,9 @@ describe("GET /api/corpus — pagination", () => {
 // 8. Full lifecycle verification
 // ────────────────────────────────────────────
 
-describe("Full lifecycle — verify corpus detail reflects all writes", () => {
+describe("Full lifecycle — verify vantage detail reflects all writes", () => {
   it("detail endpoint shows activity, approval, and revenue", async () => {
-    const res = await api(`/api/corpus/${corpusId}`);
+    const res = await api(`/api/vantage/${vantageId}`);
     expect(res.status).toBe(200);
 
     const body = await res.json();

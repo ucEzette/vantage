@@ -18,18 +18,18 @@ function api(path: string, init?: RequestInit) {
   });
 }
 
-let sellerCorpusId: string;
+let sellerVantageId: string;
 let sellerApiKey: string;
-let buyerCorpusId: string;
+let buyerVantageId: string;
 let buyerApiKey: string;
 
 // ────────────────────────────────────────────
-// Setup: create seller + buyer corpuses
+// Setup: create seller + buyer vantagees
 // ────────────────────────────────────────────
 
 describe("x402 Setup", () => {
-  it("creates seller corpus with service", async () => {
-    const res = await api("/api/corpus", {
+  it("creates seller vantage with service", async () => {
+    const res = await api("/api/vantage", {
       method: "POST",
       body: JSON.stringify({
         name: "x402 Seller",
@@ -43,14 +43,14 @@ describe("x402 Setup", () => {
     });
     expect(res.status).toBe(201);
     const body = await res.json();
-    sellerCorpusId = body.id;
+    sellerVantageId = body.id;
     sellerApiKey = body.apiKeyOnce;
-    expect(sellerCorpusId).toBeDefined();
+    expect(sellerVantageId).toBeDefined();
     expect(sellerApiKey).toBeDefined();
   });
 
-  it("creates buyer corpus", async () => {
-    const res = await api("/api/corpus", {
+  it("creates buyer vantage", async () => {
+    const res = await api("/api/vantage", {
       method: "POST",
       body: JSON.stringify({
         name: "x402 Buyer",
@@ -61,7 +61,7 @@ describe("x402 Setup", () => {
     });
     expect(res.status).toBe(201);
     const body = await res.json();
-    buyerCorpusId = body.id;
+    buyerVantageId = body.id;
     buyerApiKey = body.apiKeyOnce;
   });
 });
@@ -70,9 +70,9 @@ describe("x402 Setup", () => {
 // GET 402 — Service storefront
 // ────────────────────────────────────────────
 
-describe("GET /api/corpus/:id/service — 402 storefront", () => {
+describe("GET /api/vantage/:id/service — 402 storefront", () => {
   it("returns 402 with payment details for registered service", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`);
+    const res = await api(`/api/vantage/${sellerVantageId}/service`);
     expect(res.status).toBe(402);
 
     const body = await res.json();
@@ -83,13 +83,13 @@ describe("GET /api/corpus/:id/service — 402 storefront", () => {
     expect(body.payee).toBeDefined();
   });
 
-  it("returns 404 for corpus without service", async () => {
-    const res = await api(`/api/corpus/${buyerCorpusId}/service`);
+  it("returns 404 for vantage without service", async () => {
+    const res = await api(`/api/vantage/${buyerVantageId}/service`);
     expect(res.status).toBe(404);
   });
 
-  it("returns 404 for non-existent corpus", async () => {
-    const res = await api("/api/corpus/nonexistent_12345/service");
+  it("returns 404 for non-existent vantage", async () => {
+    const res = await api("/api/vantage/nonexistent_12345/service");
     expect(res.status).toBe(404);
   });
 });
@@ -98,9 +98,9 @@ describe("GET /api/corpus/:id/service — 402 storefront", () => {
 // PUT — Service registration
 // ────────────────────────────────────────────
 
-describe("PUT /api/corpus/:id/service — Register service", () => {
+describe("PUT /api/vantage/:id/service — Register service", () => {
   it("rejects without auth", async () => {
-    const res = await api(`/api/corpus/${buyerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${buyerVantageId}/service`, {
       method: "PUT",
       body: JSON.stringify({ serviceName: "test", price: 1 }),
     });
@@ -108,7 +108,7 @@ describe("PUT /api/corpus/:id/service — Register service", () => {
   });
 
   it("rejects invalid price", async () => {
-    const res = await api(`/api/corpus/${buyerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${buyerVantageId}/service`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${buyerApiKey}` },
       body: JSON.stringify({ serviceName: "test", price: -5 }),
@@ -117,7 +117,7 @@ describe("PUT /api/corpus/:id/service — Register service", () => {
   });
 
   it("rejects missing serviceName", async () => {
-    const res = await api(`/api/corpus/${buyerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${buyerVantageId}/service`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${buyerApiKey}` },
       body: JSON.stringify({ price: 1 }),
@@ -130,9 +130,9 @@ describe("PUT /api/corpus/:id/service — Register service", () => {
 // POST — Payment submission validation
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus/:id/service — Payment validation", () => {
+describe("POST /api/vantage/:id/service — Payment validation", () => {
   it("rejects without auth header", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       body: JSON.stringify({}),
     });
@@ -140,7 +140,7 @@ describe("POST /api/corpus/:id/service — Payment validation", () => {
   });
 
   it("rejects without X-PAYMENT header", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       headers: { Authorization: `Bearer ${buyerApiKey}` },
       body: JSON.stringify({}),
@@ -149,7 +149,7 @@ describe("POST /api/corpus/:id/service — Payment validation", () => {
   });
 
   it("rejects X-PAYMENT without nonce", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${buyerApiKey}`,
@@ -168,7 +168,7 @@ describe("POST /api/corpus/:id/service — Payment validation", () => {
   });
 
   it("rejects invalid X-PAYMENT format", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${buyerApiKey}`,
@@ -180,7 +180,7 @@ describe("POST /api/corpus/:id/service — Payment validation", () => {
   });
 
   it("rejects insufficient payment amount", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${buyerApiKey}`,
@@ -202,7 +202,7 @@ describe("POST /api/corpus/:id/service — Payment validation", () => {
     // Without ARC_RELAYER_PRIVATE_KEY, we expect 503 or a payment verification error.
     // In test environments, we'll hit the payee mismatch or signature error first,
     // but the broadcast check exists at line 247-253.
-    const res = await api(`/api/corpus/${sellerCorpusId}/service`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/service`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${buyerApiKey}`,
@@ -250,9 +250,9 @@ describe("POST /api/playbooks/:id/purchase — Payment required", () => {
 // Key regeneration — requires wallet signature
 // ────────────────────────────────────────────
 
-describe("POST /api/corpus/:id/regenerate-key — Signature required", () => {
+describe("POST /api/vantage/:id/regenerate-key — Signature required", () => {
   it("rejects without signature", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/regenerate-key`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/regenerate-key`, {
       method: "POST",
       body: JSON.stringify({ walletAddress: "0xCreator" }),
     });
@@ -260,12 +260,12 @@ describe("POST /api/corpus/:id/regenerate-key — Signature required", () => {
   });
 
   it("rejects with all fields but invalid signature", async () => {
-    const res = await api(`/api/corpus/${sellerCorpusId}/regenerate-key`, {
+    const res = await api(`/api/vantage/${sellerVantageId}/regenerate-key`, {
       method: "POST",
       body: JSON.stringify({
         walletAddress: "0xCreator",
         signature: "0xbadsig",
-        message: `Regenerate key for ${sellerCorpusId}`,
+        message: `Regenerate key for ${sellerVantageId}`,
       }),
     });
     // Should fail at signature verification
