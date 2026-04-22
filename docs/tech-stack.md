@@ -3,7 +3,7 @@
 ## 12.1 Overview
 
 ```
-corpus/
+vantage/
 ├── apps/
 │   └── web/                     ← Next.js 16 (Vercel)
 │       ├── Frontend (Dashboard, Launchpad, Agents, Playbooks, Activity, etc.)
@@ -11,8 +11,8 @@ corpus/
 │       └── Commerce Storefront (x402)
 │
 ├── contracts/                   ← Solidity (Hedera Testnet)
-│   ├── CorpusRegistry.sol       ← Corpus genesis + Pulse token issuance
-│   └── CorpusNameService.sol    ← Domain naming
+│   ├── VantageRegistry.sol       ← Vantage genesis + Pulse token issuance
+│   └── VantageNameService.sol    ← Domain naming
 │
 └── packages/
     └── prime-agent/             ← Python (User PC)
@@ -49,7 +49,7 @@ corpus/
 
 ---
 
-## 12.2 apps/web — Corpus Web (Vercel)
+## 12.2 apps/web — Vantage Web (Vercel)
 
 Dashboard, Launchpad, Agents, Playbooks, Activity, Leaderboard. Frontend + REST API + Commerce Storefront.
 
@@ -83,28 +83,28 @@ Dashboard, Launchpad, Agents, Playbooks, Activity, Leaderboard. Frontend + REST 
 
 | Endpoint | Method | Caller | Purpose |
 |---|---|---|---|
-| `/api/corpus` | GET | Web UI | List all Corpuses |
-| `/api/corpus` | POST | Web UI | Corpus registration (Genesis) |
-| `/api/corpus/me` | GET | Web UI | Get Corpuses owned by current wallet |
-| `/api/corpus/:id` | GET | Web UI / Local Agent | Corpus detail + configuration |
-| `/api/corpus/:id/activity` | GET | Web UI | Activity log for Corpus |
-| `/api/corpus/:id/activity` | POST | Local Agent | Agent activity reporting |
-| `/api/corpus/:id/revenue` | GET | Web UI | Revenue history for Corpus |
-| `/api/corpus/:id/revenue` | POST | Local Agent | Revenue reporting |
-| `/api/corpus/:id/status` | PATCH | Local Agent | Agent status (online/offline) |
-| `/api/corpus/:id/patrons` | GET | Web UI | Patron list for Corpus |
-| `/api/corpus/:id/patrons` | POST | Web UI | Register as Patron (requires min Pulse holding) |
-| `/api/corpus/:id/patrons` | DELETE | Web UI | Withdraw Patron status |
-| `/api/corpus/:id/approvals` | GET | Web UI / Local Agent | Pending approval list |
-| `/api/corpus/:id/approvals` | POST | Local Agent | Create approval request |
-| `/api/corpus/:id/approvals/:approvalId` | PATCH | Web UI | Approve/reject |
-| `/api/corpus/:id/wallet` | GET | Local Agent | Agent wallet info (walletId, address) — fetched at startup |
-| `/api/corpus/:id/sign` | POST | Local Agent | x402 signing proxy — Web signs via Circle MPC, returns signature + X-PAYMENT header |
-| `/api/corpus/:id/service` | GET | Local Agent | Inter-Corpus service request → 402 response (x402) |
-| `/api/corpus/:id/service` | POST | Local Agent | x402 signature + retry → save to job queue |
-| `/api/corpus/:id/service` | PUT | Local Agent | Update service registration |
-| `/api/corpus/:id/transfer` | POST | Web UI | Transfer Corpus ownership |
-| `/api/corpus/:id/regenerate-key` | POST | Web UI | Regenerate API key |
+| `/api/vantage` | GET | Web UI | List all Vantagees |
+| `/api/vantage` | POST | Web UI | Vantage registration (Genesis) |
+| `/api/vantage/me` | GET | Web UI | Get Vantagees owned by current wallet |
+| `/api/vantage/:id` | GET | Web UI / Local Agent | Vantage detail + configuration |
+| `/api/vantage/:id/activity` | GET | Web UI | Activity log for Vantage |
+| `/api/vantage/:id/activity` | POST | Local Agent | Agent activity reporting |
+| `/api/vantage/:id/revenue` | GET | Web UI | Revenue history for Vantage |
+| `/api/vantage/:id/revenue` | POST | Local Agent | Revenue reporting |
+| `/api/vantage/:id/status` | PATCH | Local Agent | Agent status (online/offline) |
+| `/api/vantage/:id/patrons` | GET | Web UI | Patron list for Vantage |
+| `/api/vantage/:id/patrons` | POST | Web UI | Register as Patron (requires min Pulse holding) |
+| `/api/vantage/:id/patrons` | DELETE | Web UI | Withdraw Patron status |
+| `/api/vantage/:id/approvals` | GET | Web UI / Local Agent | Pending approval list |
+| `/api/vantage/:id/approvals` | POST | Local Agent | Create approval request |
+| `/api/vantage/:id/approvals/:approvalId` | PATCH | Web UI | Approve/reject |
+| `/api/vantage/:id/wallet` | GET | Local Agent | Agent wallet info (walletId, address) — fetched at startup |
+| `/api/vantage/:id/sign` | POST | Local Agent | x402 signing proxy — Web signs via Circle MPC, returns signature + X-PAYMENT header |
+| `/api/vantage/:id/service` | GET | Local Agent | Inter-Vantage service request → 402 response (x402) |
+| `/api/vantage/:id/service` | POST | Local Agent | x402 signature + retry → save to job queue |
+| `/api/vantage/:id/service` | PUT | Local Agent | Update service registration |
+| `/api/vantage/:id/transfer` | POST | Web UI | Transfer Vantage ownership |
+| `/api/vantage/:id/regenerate-key` | POST | Web UI | Regenerate API key |
 | `/api/leaderboard` | GET | Web UI | Ranking data |
 | `/api/services` | GET | Web UI / Local Agent | List all registered services |
 | `/api/playbooks` | GET | Web UI / Local Agent | List all published playbooks |
@@ -191,7 +191,7 @@ The Prime Agent uses a **ReAct-style tool-calling loop** powered by the OpenAI S
 | `hedera-agent-kit` | Hedera Agent Kit — 40+ on-chain tools (Pulse, HBAR, governance) |
 | `stagehand` | Local Chrome browser automation — X/LinkedIn/Reddit posting, research, mention handling |
 | `httpx` | Async HTTP (Web API communication, x402 payments, commerce polling) |
-| ~~`x402`~~ | Not needed — signing delegated to Web proxy (`POST /api/corpus/:id/sign`). Agent only parses 402 responses. |
+| ~~`x402`~~ | Not needed — signing delegated to Web proxy (`POST /api/vantage/:id/sign`). Agent only parses 402 responses. |
 | `pydantic` | Data validation + settings |
 | `click` | CLI interface |
 | `rich` | Terminal UI (status display, logs) |
@@ -210,7 +210,7 @@ pip install vantage-agent
 vantage-agent config --api-key <OPENAI_KEY> --hedera-key <HEDERA_KEY>
 
 # Run
-vantage-agent start --corpus-id 0.0.111
+vantage-agent start --vantage-id 0.0.111
 
 # Check status
 vantage-agent status
@@ -237,7 +237,7 @@ User PC (vantage-agent start)
 │   ├── Available tools:
 │   │   ├── Browser ──── Stagehand → Web research, social posting via local Chrome
 │   │   ├── Hedera ───── Agent Kit → Pulse ops, governance
-│   │   ├── Commerce ─── x402 + Circle → Inter-Corpus service/Playbook purchases (USDC on Arc)
+│   │   ├── Commerce ─── x402 + Circle → Inter-Vantage service/Playbook purchases (USDC on Arc)
 │   │   └── Web API ──── httpx → Activity reporting, approval requests
 │   └── Loop ends when LLM returns no tool_calls
 │
@@ -257,7 +257,7 @@ Uses Python built-in `sqlite3`. No additional installation required. Single file
 | `commerce_queue` | Commerce transaction status (pending/processing/done) |
 | `approval_cache` | Local cache for approval requests/results |
 | `spending_log` | Tracks all spending (amount, currency, category) for budget enforcement |
-| `corpus_config` | Corpus configuration cache → avoids redundant Web API calls |
+| `vantage_config` | Vantage configuration cache → avoids redundant Web API calls |
 | `playbooks` | Purchased Playbook cache → applied to agent strategy |
 | `content_performance` | Engagement metrics per post (likes, reposts, replies, impressions) → feeds learning loop |
 | `strategy_learnings` | AI-generated strategy insights with confidence scores and expiration → drives strategy evolution |
@@ -303,16 +303,16 @@ Local Agent ← Web (commands):   Local Agent periodically polls Web API
 
 | Direction | Method | Purpose |
 |---|---|---|
-| Agent → Web | `POST /api/corpus/:id/activity` | Activity reporting |
-| Agent → Web | `POST /api/corpus/:id/revenue` | Revenue reporting |
-| Agent → Web | `PATCH /api/corpus/:id/status` | Online/offline status |
-| Agent → Web | `POST /api/corpus/:id/approvals` | Approval request |
-| Agent ← Web | `GET /api/corpus/:id/approvals` (polling) | Receive approval/rejection result |
-| Agent → Web | `GET /api/corpus/:id/service` | x402 service request → immediate 402 response |
-| Agent → Web | `POST /api/corpus/:id/service` | x402 signature + retry → save to job queue |
-| Agent → Web | `PUT /api/corpus/:id/service` | Update service registration |
-| Agent → Web | `POST /api/corpus/:id/sign` | x402 signing proxy → Circle MPC signature |
-| Agent ← Web | `GET /api/corpus/:id/wallet` | Agent wallet info (walletId, address) at startup |
+| Agent → Web | `POST /api/vantage/:id/activity` | Activity reporting |
+| Agent → Web | `POST /api/vantage/:id/revenue` | Revenue reporting |
+| Agent → Web | `PATCH /api/vantage/:id/status` | Online/offline status |
+| Agent → Web | `POST /api/vantage/:id/approvals` | Approval request |
+| Agent ← Web | `GET /api/vantage/:id/approvals` (polling) | Receive approval/rejection result |
+| Agent → Web | `GET /api/vantage/:id/service` | x402 service request → immediate 402 response |
+| Agent → Web | `POST /api/vantage/:id/service` | x402 signature + retry → save to job queue |
+| Agent → Web | `PUT /api/vantage/:id/service` | Update service registration |
+| Agent → Web | `POST /api/vantage/:id/sign` | x402 signing proxy → Circle MPC signature |
+| Agent ← Web | `GET /api/vantage/:id/wallet` | Agent wallet info (walletId, address) at startup |
 | Agent ← Web | `GET /api/services` | Discover all registered services |
 | Agent ← Web | `GET /api/jobs/pending` (polling) | Check for pending jobs |
 | Agent → Web | `POST /api/jobs/:id/result` | Submit job result |
@@ -322,21 +322,21 @@ Local Agent ← Web (commands):   Local Agent periodically polls Web API
 | Agent → Web | `POST /api/playbooks/:id/purchase` | Purchase a playbook (x402) |
 | Agent → Web | `PATCH /api/playbooks/:id/apply` | Apply purchased playbook |
 
-Authentication: `VANTAGE_API_KEY` (issued at Corpus creation)
+Authentication: `VANTAGE_API_KEY` (issued at Vantage creation)
 
-### Corpus Creation → Agent Execution Flow
+### Vantage Creation → Agent Execution Flow
 
 ```
-1. User configures Corpus + selects GTM channels on Launchpad
+1. User configures Vantage + selects GTM channels on Launchpad
 2. Web issues Pulse token via HTS (on-chain, Creator signs)
 3. Web creates Agent Wallet via Circle Developer-Controlled Wallets SDK
    ├── client.createWallets({ blockchains: ["ARC-TESTNET"], accountType: "EOA" })
-   ├── walletId + address saved to Supabase (linked to Corpus)
+   ├── walletId + address saved to Supabase (linked to Vantage)
    └── Testnet: auto-fund via Circle faucet (20 USDC)
-4. Web saves Corpus to Supabase + issues API Key
+4. Web saves Vantage to Supabase + issues API Key
 5. Prime Agent installation & execution instructions displayed to user
 6. User runs vantage-agent start locally
-7. Local Agent downloads Corpus configuration from Web API (includes walletId)
+7. Local Agent downloads Vantage configuration from Web API (includes walletId)
 8. Local Agent begins autonomous GTM with Stagehand + local Chrome
 9. For x402 payments: Agent calls Circle API to sign (never touches private key)
 10. Activity details periodically reported to Web API
@@ -348,10 +348,10 @@ Authentication: `VANTAGE_API_KEY` (issued at Corpus creation)
 
 | Package | Location | Purpose | Track |
 |---|---|---|---|
-| HTS Precompile (`0x167`) | CorpusRegistry contract | Pulse token creation during Genesis (3% fee to protocol wallet) | Tokenization |
+| HTS Precompile (`0x167`) | VantageRegistry contract | Pulse token creation during Genesis (3% fee to protocol wallet) | Tokenization |
 | `hedera-agent-kit` (Python) | Local Agent | Token balance queries, governance | Tokenization |
 
-**Token Creation:** Handled on-chain inside `CorpusRegistry.createCorpus()` via HTS precompile. Creator signs the transaction, contract mints the token, distributes 97% to Creator and 3% to Corpus Protocol wallet as launchpad fee.
+**Token Creation:** Handled on-chain inside `VantageRegistry.createVantage()` via HTS precompile. Creator signs the transaction, contract mints the token, distributes 97% to Creator and 3% to Vantage Protocol wallet as launchpad fee.
 
 **Hedera Agent Kit Usage (Local Agent):**
 
@@ -368,7 +368,7 @@ Authentication: `VANTAGE_API_KEY` (issued at Corpus creation)
 | `x402` / `x402-fetch` | Local Agent | HTTP 402 protocol client (request → 402 → sign → retry) | Agentic Nanopayments |
 | `@circle-fin/developer-controlled-wallets` | Web | MPC-secured agent wallet creation + signing proxy (keys never leave server) | Agentic Nanopayments |
 | Circle Nanopayments API | Web | Offchain payment validation, instant confirmation, batched Arc settlement | Agentic Nanopayments |
-| Commerce Storefront | Web | Per-Corpus service endpoint, 402 responses, job queue relay | Agentic Nanopayments |
+| Commerce Storefront | Web | Per-Vantage service endpoint, 402 responses, job queue relay | Agentic Nanopayments |
 
 **Payment Stack (3 layers):**
 - **x402 Protocol** — Open HTTP 402 standard (Coinbase + Cloudflare). Defines the request/response flow
@@ -377,16 +377,16 @@ Authentication: `VANTAGE_API_KEY` (issued at Corpus creation)
 
 **Agent Wallet Lifecycle:**
 ```
-[Corpus Genesis — Web Backend]
+[Vantage Genesis — Web Backend]
 1. client.createWallets({ walletSetId, blockchains: ["EVM-TESTNET"], count: 1, accountType: "EOA" })
-2. Save walletId + address to Supabase (corpus.agentWalletId, corpus.agentWalletAddress)
+2. Save walletId + address to Supabase (vantage.agentWalletId, vantage.agentWalletAddress)
 3. Fund via Circle testnet faucet (20 USDC)
 
 [Agent Startup — Local Agent]
-4. GET /api/corpus/:id/wallet → receives { walletId, address }
+4. GET /api/vantage/:id/wallet → receives { walletId, address }
 
 [Agent Payment — Local Agent]
-5. POST /api/corpus/:id/sign { payee, amount }
+5. POST /api/vantage/:id/sign { payee, amount }
    → Web validates VANTAGE_API_KEY + threshold check
    → Web calls Circle signTypedData({ walletId, data: EIP-3009 })
    → Circle MPC signs (key never leaves Circle infra)
@@ -399,23 +399,23 @@ Authentication: `VANTAGE_API_KEY` (issued at Corpus creation)
 |---|---|---|---|
 | `CIRCLE_API_KEY` | Web .env only | Developer (one-time, console.circle.com) | Agent never touches Circle keys |
 | `CIRCLE_ENTITY_SECRET` | Web .env only | Developer (one-time, `crypto.randomBytes(32)`) | Registered with Circle SDK, recovery file backed up |
-| `CIRCLE_WALLET_SET_ID` | Web .env only | Developer (one-time, `client.createWalletSet()`) | Web uses this to create per-Corpus wallets |
-| `walletId` | Supabase (per Corpus) | Web backend (auto, at Genesis) | Agent fetches from `GET /api/corpus/:id/wallet` at startup |
+| `CIRCLE_WALLET_SET_ID` | Web .env only | Developer (one-time, `client.createWalletSet()`) | Web uses this to create per-Vantage wallets |
+| `walletId` | Supabase (per Vantage) | Web backend (auto, at Genesis) | Agent fetches from `GET /api/vantage/:id/wallet` at startup |
 | `VANTAGE_API_KEY` | Supabase + Agent .env | Web backend (auto, at Genesis) | Agent uses this to authenticate all Web API calls including signing |
 
-**Signing Proxy:** Agent never holds private keys. For x402 payments, Agent calls `POST /api/corpus/:id/sign` → Web validates (API key, threshold) → Web signs via Circle MPC → returns signature → Agent attaches to X-PAYMENT header.
+**Signing Proxy:** Agent never holds private keys. For x402 payments, Agent calls `POST /api/vantage/:id/sign` → Web validates (API key, threshold) → Web signs via Circle MPC → returns signature → Agent attaches to X-PAYMENT header.
 
 **Service types available via x402:**
 - One-shot services: image generation, translation, market analysis, copywriting
 - **GTM Playbooks**: validated strategy packages that change agent behavior (see Section 6.3)
 
-**Inter-Corpus Payment Flow (USDC on Arc via Circle Nanopayments):**
+**Inter-Vantage Payment Flow (USDC on Arc via Circle Nanopayments):**
 ```
 Local Agent A (service requester)
-    → GET /api/corpus/B/service (direct HTTP request to Web)
+    → GET /api/vantage/B/service (direct HTTP request to Web)
     ← 402 response {price: 0.05, token: USDC, network: arc, payee: 0x...}
     → Agent A signs EIP-3009 via Circle Developer-Controlled Wallets (gas-free)
-    → POST /api/corpus/B/service + X-PAYMENT header
+    → POST /api/vantage/B/service + X-PAYMENT header
     → Web forwards to Circle Nanopayments API → instant offchain confirmation
     → Save to job queue (Supabase)
     → Agent B polls → receives job → performs service
@@ -424,7 +424,7 @@ Local Agent A (service requester)
     [Background: Circle batches settlements on Arc]
 ```
 
-> **Clean separation:** Hedera handles Pulse governance & identity. x402 + Circle Nanopayments on Arc handles all USDC flows — inter-Corpus commerce + Agent Treasury management. Different chains, different tokens, different purposes.
+> **Clean separation:** Hedera handles Pulse governance & identity. x402 + Circle Nanopayments on Arc handles all USDC flows — inter-Vantage commerce + Agent Treasury management. Different chains, different tokens, different purposes.
 >
 > **Why Arc over Base:** USDC is Arc's native gas token (no ETH needed), sub-second finality, ~$0.0001 deterministic gas. Arc is purpose-built by Circle for stablecoin finance — tighter SDK integration, zero gas token management overhead.
 
@@ -487,17 +487,17 @@ NEXT_PUBLIC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
 # Hedera Mirror Node
 NEXT_PUBLIC_HEDERA_MIRROR_URL=https://testnet.mirrornode.hedera.com
 
-# Corpus Genesis
+# Vantage Genesis
 NEXT_PUBLIC_CORPUS_CREATION_HBAR=20
 ```
 
 ### packages/prime-agent (.env)
 
 ```env
-# Corpus Web API
-VANTAGE_API_URL=https://corpus.app
-VANTAGE_API_KEY=cpk_...    # Issued at Corpus Genesis (displayed once on Launchpad)
-VANTAGE_ID=                # On-chain Corpus ID (e.g. 0.0.xxxxx or cuid)
+# Vantage Web API
+VANTAGE_API_URL=https://vantage.app
+VANTAGE_API_KEY=cpk_...    # Issued at Vantage Genesis (displayed once on Launchpad)
+VANTAGE_ID=                # On-chain Vantage ID (e.g. 0.0.xxxxx or cuid)
 
 # OpenAI (Agent Loop + Stagehand)
 OPENAI_API_KEY=
@@ -513,4 +513,4 @@ X_EMAIL=                  # Used if X asks for email verification
 # APPROVAL_THRESHOLD=10       # USD — above this, request approval
 ```
 
-> **Note:** Hedera keys are no longer required in the agent `.env`. Hedera operations are handled via the Web API and Mirror Node. x402 signing is delegated to the Web proxy (`POST /api/corpus/:id/sign`).
+> **Note:** Hedera keys are no longer required in the agent `.env`. Hedera operations are handled via the Web API and Mirror Node. x402 signing is delegated to the Web proxy (`POST /api/vantage/:id/sign`).

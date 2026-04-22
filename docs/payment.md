@@ -1,12 +1,12 @@
 # Payment Architecture — Dual-Chain
 
-## 6.1 Hedera — Internal Economy (Corpus ↔ Patron)
+## 6.1 Hedera — Internal Economy (Vantage ↔ Patron)
 
 Managed via **Hedera Agent Kit** tools within the Prime Agent's tool-calling loop. The agent autonomously executes on-chain operations using its Hedera operator key.
 
 | Operation | Trigger | Where | Mechanism |
 |---|---|---|---|
-| Pulse token issuance | Corpus Genesis | On-chain (CorpusRegistry) | HTS Precompile via `createCorpus()` — Creator signs, 3% fee to protocol wallet |
+| Pulse token issuance | Vantage Genesis | On-chain (VantageRegistry) | HTS Precompile via `createVantage()` — Creator signs, 3% fee to protocol wallet |
 | Governance voting weight | Kernel vote | Local Agent / Web | HTS `TokenBalanceQuery` via `get_token_balance` |
 
 ### 6.1.1 Revenue Model (Agent Treasury)
@@ -32,9 +32,9 @@ Revenue $1.00 USDC received (via Circle Nanopayments on Arc)
 - Revenue reinvestment into the agent economy creates a healthier flywheel
 - Creator is incentivized to build a better agent (more commerce = more fees), not to extract dividends
 
-## 6.2 x402 + Circle Nanopayments on Arc — External Economy (Corpus ↔ Corpus)
+## 6.2 x402 + Circle Nanopayments on Arc — External Economy (Vantage ↔ Vantage)
 
-Inter-Corpus autonomous transactions form an agent economy ecosystem. Since Local Agents cannot communicate directly (NAT/firewall), **Web serves as each Corpus's storefront (proxy)**. From Agent A's perspective, it operates as a genuine x402 protocol on **Arc (USDC)**.
+Inter-Vantage autonomous transactions form an agent economy ecosystem. Since Local Agents cannot communicate directly (NAT/firewall), **Web serves as each Vantage's storefront (proxy)**. From Agent A's perspective, it operates as a genuine x402 protocol on **Arc (USDC)**.
 
 **Payment Stack (3 layers):**
 ```
@@ -47,11 +47,11 @@ Arc Network (L1)                   ← Onchain batch settlement (USDC = native g
 
 **Why Arc:** USDC is the native gas token on Arc — no separate gas token needed. Sub-second finality, ~$0.0001 gas fees, deterministic dollar-denominated costs. Ideal for agent-to-agent micropayments.
 
-**Agent Wallets:** Managed via Circle Developer-Controlled Wallets (MPC-secured). Private keys are never exposed to agent code. Wallets are created per-Corpus at Genesis and funded with USDC from the Circle testnet faucet (https://faucet.circle.com).
+**Agent Wallets:** Managed via Circle Developer-Controlled Wallets (MPC-secured). Private keys are never exposed to agent code. Wallets are created per-Vantage at Genesis and funded with USDC from the Circle testnet faucet (https://faucet.circle.com).
 
 ### Service Catalog
 
-Each Corpus can register services on its storefront. The agent autonomously discovers, evaluates, and purchases services to improve GTM performance.
+Each Vantage can register services on its storefront. The agent autonomously discovers, evaluates, and purchases services to improve GTM performance.
 
 | Service Type | Example | Price Range | Description |
 |---|---|---|---|
@@ -63,9 +63,9 @@ Each Corpus can register services on its storefront. The agent autonomously disc
 
 ### Storefront Model
 
-Each Corpus has a public service endpoint on Web: `/api/corpus/:id/service`
+Each Vantage has a public service endpoint on Web: `/api/vantage/:id/service`
 
-Information registered at Corpus creation:
+Information registered at Vantage creation:
 - Service type & description
 - Price (per request, in USDC)
 - Wallet address (Arc, for USDC receipt — created via Circle Developer-Controlled Wallets)
@@ -79,7 +79,7 @@ Web can **immediately return a 402 response** based on this information. No need
 Local Agent A                  Web (Storefront)              Local Agent B
      │                            │                           │
      │  1. Service request         │                           │
-     ├── GET /api/corpus/B/service→│                           │
+     ├── GET /api/vantage/B/service→│                           │
      │                            │                           │
      │  2. Immediate 402 response  │                           │
      │←── 402 (price, token: USDC, │ (based on B's registered info)
@@ -122,7 +122,7 @@ Local Agent A                  Web (Storefront)              Local Agent B
 
 ## 6.3 GTM Playbook Commerce
 
-Playbooks are **validated GTM strategy packages** that one Corpus has proven effective and sells to others via x402. Unlike one-shot services (image, translation), a Playbook **reshapes the agent's own strategy** — the agent pays to evolve.
+Playbooks are **validated GTM strategy packages** that one Vantage has proven effective and sells to others via x402. Unlike one-shot services (image, translation), a Playbook **reshapes the agent's own strategy** — the agent pays to evolve.
 
 ### Playbook Structure
 
@@ -160,12 +160,12 @@ Playbooks are **validated GTM strategy packages** that one Corpus has proven eff
 ### Agent Playbook Consumption Flow
 
 ```
-Agent A (new Corpus, low engagement)
+Agent A (new Vantage, low engagement)
     │
     │ LLM judges: "7 posts, 0 engagement. Strategy needs improvement."
     │
     ├── discover_services(category="playbook", target="developers")
-    ├── purchase_service("corpus_B", {type: "playbook"})  ← x402 $0.30 USDC
+    ├── purchase_service("vantage_B", {type: "playbook"})  ← x402 $0.30 USDC
     │
     ▼
     Agent applies Playbook:

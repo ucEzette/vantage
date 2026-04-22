@@ -1,15 +1,15 @@
 # User Flow
 
-## 5.1 Corpus Genesis (Incorporation)
+## 5.1 Vantage Genesis (Incorporation)
 
 ```
 1. User inputs product/service description + token config
         │
         ▼
-2. Corpus Genesis executes (Creator signs on-chain tx)
-   ├── CorpusRegistry.createCorpus() called
+2. Vantage Genesis executes (Creator signs on-chain tx)
+   ├── VantageRegistry.createVantage() called
    │   ├── HTS Precompile mints Pulse token (contract = treasury)
-   │   ├── 3% launchpad fee → Corpus Protocol wallet
+   │   ├── 3% launchpad fee → Vantage Protocol wallet
    │   └── 97% → Creator wallet
    ├── Revenue model: 100% Agent Treasury (no external distribution)
    │   - Creator earns through service fees
@@ -17,7 +17,7 @@
    ├── Set Kernel policies
    │   - Approval threshold (e.g., transactions > $10 require approval)
    │   - GTM budget limits, operational parameters
-   ├── CorpusNameService.registerName() — immutable agent identity
+   ├── VantageNameService.registerName() — immutable agent identity
    ├── Create Agent Wallet (Circle Developer-Controlled Wallet)
    │   - Web calls Circle SDK → MPC wallet created on Arc
    │   - walletId + address saved to Supabase
@@ -26,24 +26,24 @@
    ├── Prime Agent configuration
    │   - Persona, target audience, tone & voice
    │   - GTM target channels (X, LinkedIn, Reddit, etc.)
-   └── Corpus creation complete + API key issued
+   └── Vantage creation complete + API key issued
         │
         ▼
 3. User runs Prime Agent locally
    $ pip install vantage-agent
-   $ vantage-agent start --corpus-id 0.0.111
+   $ vantage-agent start --vantage-id 0.0.111
 ```
 
-**Launchpad Fee:** 3% of total Pulse supply is sent to the Corpus Protocol wallet on every Genesis as a platform fee. This is enforced on-chain in the CorpusRegistry contract (`LAUNCHPAD_FEE_BPS = 300`).
+**Launchpad Fee:** 3% of total Pulse supply is sent to the Vantage Protocol wallet on every Genesis as a platform fee. This is enforced on-chain in the VantageRegistry contract (`LAUNCHPAD_FEE_BPS = 300`).
 
 ## 5.1.1 Wallet Architecture
 
-Corpus Protocol uses two distinct wallet types for different purposes.
+Vantage Protocol uses two distinct wallet types for different purposes.
 
 | Subject | Wallet Type | Created By | When | Purpose |
 |---|---|---|---|---|
 | **Creator** | User-owned (Dynamic: MetaMask, HashPack, etc.) | User connects manually | Launchpad entry | Hedera Pulse signing, Dashboard approvals |
-| **Prime Agent** | Circle Developer-Controlled Wallet (MPC) | **Web backend, auto-created** | **Corpus Genesis** | x402 payments, USDC receipt, Agent Treasury management |
+| **Prime Agent** | Circle Developer-Controlled Wallet (MPC) | **Web backend, auto-created** | **Vantage Genesis** | x402 payments, USDC receipt, Agent Treasury management |
 | **Patron** | User-owned (Dynamic) | User connects manually | Agents page | Pulse purchase, governance participation |
 
 **Why Circle MPC for Agent Wallets:**
@@ -65,7 +65,7 @@ MPC Node A (key shard 1) + MPC Node B (key shard 2)
 Signed transaction → broadcast to Arc
 ```
 
-**1 Corpus = 1 Agent Wallet** — each Corpus has its own Circle wallet address for independent financial operations.
+**1 Vantage = 1 Agent Wallet** — each Vantage has its own Circle wallet address for independent financial operations.
 
 ## 5.2 Pulse Trading & Patron Registration
 
@@ -79,7 +79,7 @@ Anyone with a connected wallet can buy/sell Pulse tokens freely. Pulse grants go
 
 Patron status grants governance rights (Kernel voting, policy proposals) but requires a **minimum Pulse holding threshold**. This prevents spam governance while keeping token trading open.
 
-**Minimum threshold:** `totalSupply × 0.1%` (configurable per Corpus via Kernel policy, stored as `minPatronPulse`)
+**Minimum threshold:** `totalSupply × 0.1%` (configurable per Vantage via Kernel policy, stored as `minPatronPulse`)
 
 ```
 Wallet connected → Buy Pulse (free market)
@@ -117,7 +117,7 @@ The Prime Agent autonomously executes GTM on the user's local PC using Stagehand
    │
    └── Approval Required (User confirmation)
        ├── First posting tone & voice approval
-       ├── Large Inter-Corpus transactions
+       ├── Large Inter-Vantage transactions
        ├── Kernel policy changes
        ├── New channel/strategy activation
        └── Spending above threshold
