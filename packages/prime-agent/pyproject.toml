@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vantage-agent"
 version = "0.1.0"
-description = "Prime Agent CLI for Corpus Protocol — autonomous GTM agent"
+description = "Prime Agent CLI for Vantage Protocol — autonomous GTM agent"
 requires-python = ">=3.10"
 dependencies = [
     "openai>=1.30",
