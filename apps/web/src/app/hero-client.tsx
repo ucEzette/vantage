@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 
 export function HeroClient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -12,8 +13,9 @@ export function HeroClient() {
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const chars = ".:-=+*#%@";
-    const fontSize = 14;
+    // Premium charcoal/graphite palette chars
+    const chars = " .:-=+*#%@";
+    const fontSize = 12;
 
     let W = 0;
     let H = 0;
@@ -21,7 +23,7 @@ export function HeroClient() {
     let rows = 0;
 
     function resize() {
-      const rect = canvas!.getBoundingClientRect();
+      const rect = canvas!.parentElement!.getBoundingClientRect();
       W = rect.width;
       H = rect.height;
       canvas!.width = W * dpr;
@@ -38,32 +40,38 @@ export function HeroClient() {
     let animId: number;
 
     function draw() {
-      ctx!.fillStyle = "#0a0a0a";
-      ctx!.fillRect(0, 0, W, H);
-      ctx!.font = `${fontSize}px monospace`;
+      // Very slight trail effect or clear
+      ctx!.clearRect(0, 0, W, H);
+      ctx!.font = `bold ${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const cx = x / cols - 0.5;
           const cy = y / rows - 0.5;
           const dist = Math.sqrt(cx * cx + cy * cy);
-          const wave = Math.sin(dist * 12 - frame * 0.03) * 0.5 + 0.5;
+          
+          // Smoother, deeper waves
+          const wave = Math.sin(dist * 8 - frame * 0.02) * 0.5 + 0.5;
           const noise =
-            Math.sin(x * 0.3 + frame * 0.01) *
-            Math.cos(y * 0.3 + frame * 0.02);
-          const val = wave * 0.7 + noise * 0.3;
-          const idx = Math.floor(
+            Math.sin(x * 0.2 + frame * 0.01) *
+            Math.cos(y * 0.2 + frame * 0.015);
+          
+          const val = wave * 0.8 + noise * 0.2;
+          const charIdx = Math.floor(
             Math.max(0, Math.min(1, val)) * (chars.length - 1)
           );
 
-          const alpha = 0.15 + val * 0.5;
-          // Blend cyan into regions near wave peaks
-          const cyanMix = Math.max(0, wave - 0.6) * 2.5; // 0..1 at wave peaks
-          const r = Math.round(154 * (1 - cyanMix) + 62 * cyanMix);
-          const g = Math.round(154 * (1 - cyanMix) + 207 * cyanMix);
-          const b = Math.round(154 * (1 - cyanMix) + 92 * cyanMix);
-          ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-          ctx!.fillText(chars[idx], x * fontSize * 0.6, y * fontSize + fontSize);
+          // Vivid Emerald/Primary accents in wave peaks
+          const alpha = 0.05 + val * 0.15;
+          const isPeak = wave > 0.8;
+          
+          if (isPeak) {
+            ctx!.fillStyle = `rgba(16, 185, 129, ${alpha * 1.5})`;
+          } else {
+            ctx!.fillStyle = `rgba(100, 116, 139, ${alpha})`; // Slate 500
+          }
+          
+          ctx!.fillText(chars[charIdx], x * fontSize * 0.6, y * fontSize + fontSize);
         }
       }
       frame++;
@@ -78,9 +86,19 @@ export function HeroClient() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full opacity-60"
-    />
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 2, ease: "easeOut" }}
+      className="absolute inset-0 z-0 overflow-hidden"
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full opacity-40 pointer-events-none"
+      />
+      {/* Radial fade to hide edges */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background pointer-events-none" />
+    </motion.div>
   );
 }

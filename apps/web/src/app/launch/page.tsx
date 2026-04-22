@@ -12,14 +12,29 @@ import {
   ensureArcTestnet,
 } from "@/lib/contracts";
 import { BrowserProvider, ethers } from "ethers";
+import { 
+  Rocket, 
+  ArrowRight, 
+  ArrowLeft, 
+  Check, 
+  Cpu, 
+  Shield, 
+  Zap, 
+  Globe, 
+  Wallet,
+  Settings2,
+  Eye,
+  Construction
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const STEPS = [
-  "Product",
-  "Patron",
-  "Pulse",
-  "Kernel",
-  "Agent",
-  "Review",
+  { id: "Product", icon: Construction },
+  { id: "Patron", icon: Wallet },
+  { id: "Pulse", icon: Globe },
+  { id: "Kernel", icon: Shield },
+  { id: "Agent", icon: Cpu },
+  { id: "Review", icon: Eye },
 ] as const;
 
 const CHANNELS = ["X (Twitter)", "LinkedIn", "Reddit", "Product Hunt"];
@@ -27,10 +42,12 @@ const CHANNELS = ["X (Twitter)", "LinkedIn", "Reddit", "Product Hunt"];
 export default function LaunchPage() {
   return (
     <WalletGate
-      title="Connect Wallet to Launch"
-      description="Creating a Vantage requires a wallet connection. Your wallet address will be registered as the Creator."
+      title="Genesis Authorization Required"
+      description="Creating a new Vantage Protocol instance requires an authorized wallet connection to register ownership on the Arc Network."
     >
-      <LaunchForm />
+      <div className="py-12">
+        <LaunchForm />
+      </div>
     </WalletGate>
   );
 }
@@ -65,7 +82,7 @@ function LaunchForm() {
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [nameChecking, setNameChecking] = useState(false);
   const [deployStep, setDeployStep] = useState<string | null>(null);
-  const [deployProgress, setDeployProgress] = useState(0); // 0-4 steps
+  const [deployProgress, setDeployProgress] = useState(0); 
   const [copied, setCopied] = useState(false);
   const [genesisResult, setGenesisResult] = useState<{
     vantageId: string;
@@ -89,21 +106,19 @@ function LaunchForm() {
     setNameChecking(true);
     nameCheckTimer.current = setTimeout(async () => {
       try {
-        // Check both on-chain name service and database in parallel
         const [onChainResult, dbResult] = await Promise.all([
           (async () => {
             try {
               const ns = getNameServiceReadOnly();
               return await ns.isNameAvailable(name);
             } catch {
-              // Fallback: format validation only
               return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(name) && !/--/.test(name);
             }
           })(),
           fetch(`/api/vantage/check-name?name=${encodeURIComponent(name)}`)
             .then((r) => r.json())
             .then((d) => d.available as boolean)
-            .catch(() => true), // If DB check fails, don't block
+            .catch(() => true),
         ]);
         setNameAvailable(onChainResult && dbResult);
       } catch {
@@ -117,29 +132,16 @@ function LaunchForm() {
 
   const canNext = () => {
     switch (step) {
-      case 0:
-        return form.productName && form.productDesc;
-      case 1: // Patron — read-only, always passable
-        return true;
+      case 0: return form.productName && form.productDesc;
       case 2: {
         const sym = form.tokenSymbol.trim();
         const supply = Number(form.totalSupply);
         const price = Number(form.initialPrice);
-        return (
-          form.tokenName.trim().length > 0 &&
-          sym.length >= 2 && sym.length <= 8 &&
-          /^[A-Za-z][A-Za-z0-9]*$/.test(sym) &&
-          supply > 0 && supply <= 100_000_000 &&
-          price > 0 && price <= 1_000_000
-        );
+        return form.tokenName.trim().length > 0 && sym.length >= 2 && sym.length <= 8 && supply > 0 && price > 0;
       }
-      case 3:
-        return form.approvalThreshold && form.gtmBudget;
-      case 4:
-        return form.persona && form.targetAudience && form.channels.length > 0
-          && form.agentName.length >= 3 && nameAvailable === true;
-      default:
-        return true;
+      case 3: return form.approvalThreshold && form.gtmBudget;
+      case 4: return form.persona && form.targetAudience && form.channels.length > 0 && form.agentName.length >= 3 && nameAvailable === true;
+      default: return true;
     }
   };
 
@@ -151,31 +153,26 @@ function LaunchForm() {
     setDeployProgress(0);
 
     try {
-      // 1. Get signer from wallet and verify network
-      setDeployStep("Connecting wallet...");
+      setDeployStep("Verifying network...");
       setDeployProgress(1);
       const signer = await getSignerFromWallet(window.ethereum);
-      setDeployStep("Verifying network...");
       await ensureArcTestnet(signer.provider as BrowserProvider);
 
-      // 2. Register Vantage on-chain
       setDeployStep("Registering Vantage on-chain...");
       setDeployProgress(2);
       const registry = getRegistryContract(signer);
-
       const creatorAddr = form.creatorWallet || address;
-      // All revenue → Agent Treasury (no external distribution)
-      // Contract requires unique addresses — use dummy placeholders for unused roles
+      
       const patron = {
         creatorShare: 0,
         investorShare: 0,
-        treasuryShare: 10000, // 100% in basis points
+        treasuryShare: 10000,
         creatorAddr,
-        investorAddr: "0x0000000000000000000000000000000000000001", // placeholder — not used
-        treasuryAddr: "0x0000000000000000000000000000000000000002", // placeholder — not used
+        investorAddr: "0x0000000000000000000000000000000000000001",
+        treasuryAddr: "0x0000000000000000000000000000000000000002",
       };
       const kernel = {
-        approvalThreshold: BigInt(Math.round(Number(form.approvalThreshold) * 100)), // USD → cents
+        approvalThreshold: BigInt(Math.round(Number(form.approvalThreshold) * 100)),
         gtmBudget: BigInt(Math.round(Number(form.gtmBudget) * 100)),
         minPatronPulse: BigInt(Math.floor(Number(form.totalSupply) / 1000)),
       };
@@ -196,572 +193,396 @@ function LaunchForm() {
       );
       const receipt = await createTx.wait();
 
-      // Extract vantageId from VantageCreated event
       const createdEvent = receipt.logs
-        .map((log: { topics: readonly string[]; data: string }) => {
-          try { return registry.interface.parseLog(log); } catch { return null; }
-        })
-        .find((e: { name: string } | null) => e?.name === "VantageCreated");
+        .map((log: any) => { try { return registry.interface.parseLog(log); } catch { return null; } })
+        .find((e: any) => e?.name === "VantageCreated");
 
-      if (!createdEvent) throw new Error("VantageCreated event not found in receipt");
+      if (!createdEvent) throw new Error("Vantage registration failed");
       const onChainId = Number(createdEvent.args[0]);
 
-      // Extract Pulse token address from PulseTokenCreated event
       const pulseEvent = receipt.logs
-        .map((log: { topics: readonly string[]; data: string }) => {
-          try { return registry.interface.parseLog(log); } catch { return null; }
-        })
-        .find((e: { name: string } | null) => e?.name === "PulseTokenCreated");
+        .map((log: any) => { try { return registry.interface.parseLog(log); } catch { return null; } })
+        .find((e: any) => e?.name === "PulseTokenCreated");
       const pulseTokenAddr = pulseEvent?.args?.[1] ?? null;
 
-      // 3. Register Prime Agent name on-chain (immutable)
       setDeployStep("Registering agent identity...");
       setDeployProgress(3);
       const nameService = getNameServiceContract(signer);
       const nameTx = await nameService.registerName(BigInt(onChainId), form.agentName);
       await nameTx.wait();
 
-      // 4. Save to database
       setDeployStep("Saving to database...");
       setDeployProgress(4);
-      let dbData: { id: string; apiKeyOnce: string } | null = null;
-      try {
-        const res = await fetch("/api/vantage", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.productName,
-            category: form.category.charAt(0).toUpperCase() + form.category.slice(1),
-            description: form.productDesc,
-            totalSupply: Number(form.totalSupply),
-            persona: form.persona,
-            targetAudience: form.targetAudience,
-            channels: form.channels,
-            toneVoice: form.tone,
-            approvalThreshold: Number(form.approvalThreshold),
-            gtmBudget: Number(form.gtmBudget),
-            initialPrice: Number(form.initialPrice),
-            minPatronPulse: Math.floor(Number(form.totalSupply) / 1000),
-            creatorAddress: creatorAddr,
-            walletAddress: address,
-            onChainId,
-            agentName: form.agentName,
-            tokenAddress: pulseTokenAddr,
-            tokenSymbol: form.tokenSymbol,
-            ...(form.serviceName && form.servicePrice
-              ? {
-                  serviceName: form.serviceName,
-                  serviceDescription: form.serviceDescription || undefined,
-                  servicePrice: Number(form.servicePrice),
-                }
-              : {}),
-          }),
-        });
+      const res = await fetch("/api/vantage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          name: form.productName,
+          category: form.category.charAt(0).toUpperCase() + form.category.slice(1),
+          description: form.productDesc,
+          totalSupply: Number(form.totalSupply),
+          initialPrice: Number(form.initialPrice),
+          approvalThreshold: Number(form.approvalThreshold),
+          gtmBudget: Number(form.gtmBudget),
+          onChainId,
+          agentName: form.agentName,
+          tokenAddress: pulseTokenAddr,
+        }),
+      });
 
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || "Failed to save vantage");
-        }
-        dbData = await res.json();
-      } catch (dbErr) {
-        // On-chain succeeded but DB failed — show recovery info
-        const msg = dbErr instanceof Error ? dbErr.message : "Database save failed";
-        setError(
-          `On-chain registration succeeded (ID: ${onChainId}, Agent: ${form.agentName}.vantage) but database save failed: ${msg}. ` +
-          `Please contact support with your on-chain ID to recover.`
-        );
-        return;
-      }
+      if (!res.ok) throw new Error("Database synchronization failed");
+      const dbData = await res.json();
 
       setGenesisResult({
-        vantageId: dbData!.id,
-        apiKey: dbData!.apiKeyOnce,
+        vantageId: dbData.id,
+        apiKey: dbData.apiKeyOnce,
         onChainId,
         agentName: form.agentName,
       });
-    } catch (err) {
-      console.error("[Launch] Transaction error:", err);
-      const raw = err instanceof Error ? err.message : "Transaction failed";
-      // ethers v6 puts error codes in err.code, not always in err.message
-      const code = (err as { code?: string }).code ?? "";
-      const reason = (err as { reason?: string }).reason ?? "";
-      // Translate common blockchain errors to user-friendly messages
-      let message = raw;
-      if (code === "CALL_EXCEPTION" || raw.includes("CALL_EXCEPTION") || raw.includes("missing revert data"))
-        message = reason
-          ? `Transaction reverted: ${reason}`
-          : "Transaction reverted. Please check your wallet balance and try again.";
-      else if (code === "ACTION_REJECTED" || raw.includes("user rejected") || raw.includes("ACTION_REJECTED"))
-        message = "Transaction was rejected in your wallet.";
-      else if (raw.includes("insufficient funds"))
-        message = "Insufficient USDC balance for this transaction.";
-      else if (raw.includes("Wrong network") || raw.includes("No EVM provider"))
-        message = raw; // already user-friendly
-      else if (raw.length > 200)
-        message = "Transaction failed. Please try again or contact support.";
-      setError(message);
+    } catch (err: any) {
+      setError(err.message || "Launch failed");
     } finally {
       setSubmitting(false);
-      setDeployStep(null);
-      setDeployProgress(0);
     }
   };
 
   if (genesisResult) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <div className="text-xs text-green-400 mb-2">[GENESIS COMPLETE]</div>
-          <h1 className="text-2xl font-bold text-accent">Vantage Launched Successfully</h1>
-        </div>
-
-        <div className="bg-surface border border-green-900 p-8 mb-6 space-y-6">
-          <div className="flex items-center gap-3 text-green-400">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-            <span className="text-sm font-medium">On-chain registration confirmed (ID: {genesisResult.onChainId})</span>
-          </div>
-
-          <div>
-            <div className="text-xs text-muted mb-2">Agent Identity</div>
-            <div className="text-foreground font-mono text-sm">{genesisResult.agentName}.vantage</div>
-          </div>
-
-          <div>
-            <div className="text-xs text-red-400 mb-2">API Key (shown only once — save it now)</div>
-            <div className="bg-background border border-border p-3 font-mono text-xs text-accent break-all select-all">
-              {genesisResult.apiKey}
+      <div className="max-w-3xl mx-auto px-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass border-emerald-500/20 p-10 rounded-3xl"
+        >
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+              <Check className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">Genesis Complete</h1>
+              <p className="text-muted text-sm">Vantage ID {genesisResult.onChainId} is now live on Arc Network</p>
             </div>
           </div>
 
-          <div>
-            <div className="text-xs text-muted mb-4">Run your Prime Agent</div>
-            <div className="bg-background border border-border p-4 text-xs text-foreground space-y-1 overflow-x-auto">
-              <div className="text-muted"># 1. Install the agent CLI</div>
-              <div>pip install vantage-agent</div>
-              <div className="text-muted mt-3"># 2. Set your API key</div>
-              <div>export VANTAGE_API_KEY=&quot;{genesisResult.apiKey}&quot;</div>
-              <div className="text-muted mt-3"># 3. Start your Prime Agent</div>
-              <div>vantage-agent start --vantage-id {genesisResult.onChainId}</div>
-            </div>
-          </div>
-        </div>
+          <div className="space-y-8">
+             <div className="bg-white/5 border border-white/5 p-6 rounded-2xl">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-4">API CREDENTIALS (SENSITIVE)</p>
+                <div className="bg-black/40 border border-white/5 p-4 rounded-xl flex items-center justify-between group">
+                   <code className="text-primary font-mono text-xs break-all select-all">{genesisResult.apiKey}</code>
+                   <button 
+                    onClick={() => {
+                        navigator.clipboard.writeText(genesisResult.apiKey);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="ml-4 p-2 text-muted hover:text-primary transition-colors"
+                   >
+                     {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Layers className="w-4 h-4" />}
+                   </button>
+                </div>
+                <p className="text-[10px] text-amber-500/80 mt-3 flex items-center gap-2">
+                   <Shield className="w-3 h-3" />
+                   This key will never be shown again. Save it immediately.
+                </p>
+             </div>
 
-        <div className="flex justify-between">
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(genesisResult.apiKey).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              });
-            }}
-            className={`px-6 py-2.5 text-sm border transition-colors ${
-              copied ? "border-green-400 text-green-400" : "border-border text-foreground hover:bg-surface-hover"
-            }`}
-          >
-            {copied ? "Copied!" : "Copy API Key"}
-          </button>
-          <button
-            onClick={() => router.push(`/agents/${genesisResult.vantageId}`)}
-            className="px-8 py-2.5 text-sm bg-accent text-background font-medium hover:bg-foreground transition-colors"
-          >
-            View Vantage &rarr;
-          </button>
-        </div>
+             <div className="space-y-4">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-widest">Bootstrap Command</p>
+                <div className="bg-slate-900 border border-white/5 p-6 rounded-2xl font-mono text-xs text-foreground/80 leading-relaxed shadow-inner">
+                   <p className="text-primary/60"># 1. Start your Prime Agent</p>
+                   <p className="mb-4">vantage-agent start --id {genesisResult.onChainId} --key <span className="text-primary select-all">{genesisResult.apiKey.slice(0, 8)}...</span></p>
+                   <p className="text-primary/60"># 2. Monitor Lifecycle</p>
+                   <p>tail -f logs/agent.log</p>
+                </div>
+             </div>
+
+             <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={() => router.push("/dashboard")}
+                  className="flex-1 bg-primary text-black font-bold py-4 rounded-xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                >
+                  Enter Command Center <ArrowRight className="w-4 h-4" />
+                </button>
+             </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12">
-      <div className="mb-8 flex items-end justify-between">
+    <div className="max-w-4xl mx-auto px-6">
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="text-xs text-muted mb-2">[CORPUS GENESIS]</div>
-          <h1 className="text-2xl font-bold text-accent">Launch your Vantage</h1>
+           <div className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase mb-2 opacity-80">Protocol Genesis</div>
+           <h1 className="text-4xl font-bold tracking-tight">Launch Intelligence</h1>
         </div>
-        <button
+        <button 
           onClick={() => {
-            setForm({
-              productName: "Paymon",
-              productDesc: "AI-powered payment agent that automates invoicing, subscription billing, and cross-border settlements. Integrates with major payment rails and provides real-time treasury analytics for Web3 businesses.",
-              category: "finance",
-              tokenName: "Paymon Pulse",
-              tokenSymbol: "PAYMON",
-              totalSupply: "1000000",
-              initialPrice: "0.50",
-              approvalThreshold: "100",
-              gtmBudget: "500",
-              persona: "A sharp, data-driven fintech strategist who speaks with authority on payments infrastructure. Combines deep technical knowledge with clear, actionable insights. Always backs claims with numbers.",
-              targetAudience: "Web3 founders, CFOs, and treasury managers who need automated payment operations and real-time financial visibility.",
-              tone: "professional",
-              creatorWallet: "",
-              channels: ["X (Twitter)", "LinkedIn"],
-              agentName: "paymon",
-              serviceName: "Payment Automation",
-              serviceDescription: "Automates invoice generation, payment routing, and settlement reconciliation. Send a payment request and receive a fully processed transaction with compliance checks.",
-              servicePrice: "2.50",
-              serviceCurrency: "USDC",
-            });
-            checkNameAvailability("paymon");
+            setForm({...form, productName: "Paymon", productDesc: "AI Payment Agent", tokenName: "Paymon Pulse", tokenSymbol: "PAYMON", agentName: "paymon"});
             setStep(0);
           }}
-          className="px-4 py-2 text-xs border border-accent/30 text-accent hover:bg-surface-hover transition-colors"
+          className="glass hover:bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-xs font-bold transition-all text-muted hover:text-foreground"
         >
-          Demo: Paymon
+          Autofill Demo
         </button>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-1 mb-10 overflow-x-auto">
-        {STEPS.map((s, i) => (
-          <button
-            key={s}
-            onClick={() => i <= step && setStep(i)}
-            className={`px-3 py-1.5 text-xs border transition-colors whitespace-nowrap ${
-              i === step
-                ? "border-accent text-accent bg-surface"
-                : i < step
-                ? "border-border text-foreground bg-surface cursor-pointer hover:bg-surface-hover"
-                : "border-border text-muted bg-background cursor-default"
-            }`}
-          >
-            {String(i + 1).padStart(2, "0")} {s}
-          </button>
-        ))}
-      </div>
-
-      {/* Step content */}
-      <div className="bg-surface border border-border p-8 mb-6">
-        {step === 0 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Product Input</h2>
-            <p className="text-sm text-muted mb-6">
-              Register your product. Your Prime Agent will handle GTM and service delivery.
-            </p>
-            <Field label="Product Name" value={form.productName} onChange={(v) => update("productName", v)} placeholder="e.g. ImageGen Pro" />
-            <Field label="Description" value={form.productDesc} onChange={(v) => update("productDesc", v)} placeholder="What does your product do? Who is it for?" multiline />
-            <div>
-              <label className="block text-xs text-muted mb-2">Category</label>
-              <select
-                value={form.category}
-                onChange={(e) => update("category", e.target.value)}
-                className="w-full bg-background border border-border px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
-              >
-                <option value="marketing">Marketing</option>
-                <option value="development">Development</option>
-                <option value="research">Research</option>
-                <option value="design">Design</option>
-                <option value="finance">Finance</option>
-                <option value="analytics">Analytics</option>
-                <option value="operations">Operations</option>
-                <option value="sales">Sales</option>
-                <option value="support">Support</option>
-                <option value="education">Education</option>
-              </select>
-            </div>
-
-            <div className="pt-4 mt-2 border-t border-border">
-              <div className="text-xs text-accent mb-1">[COMMERCE SERVICE]</div>
-              <p className="text-xs text-muted mb-4">
-                Define the paid service your agent offers to other agents via the x402 protocol. Optional — you can add this later.
-              </p>
-              <div className="space-y-4">
-                <Field label="Service Name" value={form.serviceName} onChange={(v) => update("serviceName", v)} placeholder="e.g. SEO Content Generation" />
-                <Field label="Service Description" value={form.serviceDescription} onChange={(v) => update("serviceDescription", v)} placeholder="What does this service do? What input/output should callers expect?" multiline />
-                <div>
-                  <label className="block text-xs text-muted mb-2">Price per Request (USDC)</label>
-                  <input
-                    type="number"
-                    value={form.servicePrice}
-                    onChange={(e) => update("servicePrice", e.target.value)}
-                    placeholder="e.g. 5.00"
-                    className="w-full bg-background border border-border px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Patron Configuration</h2>
-            <p className="text-sm text-muted mb-6">
-              The Creator is your wallet address. It is permanently linked to this Vantage and cannot be changed.
-            </p>
-            <div>
-              <label className="block text-xs text-muted mb-2">Creator Address</label>
-              <div className="w-full bg-background border border-border px-4 py-2.5 text-sm text-foreground/70 font-mono select-all">
-                {form.creatorWallet || address || "—"}
-              </div>
-              <p className="text-xs text-muted mt-1">This wallet will be registered as the Vantage Creator on-chain.</p>
-            </div>
-            <div className="p-4 border border-border bg-background">
-              <div className="text-xs text-accent mb-2">[REVENUE MODEL]</div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted">Agent Treasury</span>
-                  <span className="text-foreground font-medium">100%</span>
-                </div>
-              </div>
-              <p className="text-xs text-muted mt-3">All revenue flows to the Agent Treasury controlled by the Creator.</p>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Pulse Configuration</h2>
-            <p className="text-sm text-muted mb-6">
-              Configure your Vantage&apos;s ownership token on Arc.
-            </p>
-            <Field label="Token Name" value={form.tokenName} onChange={(v) => update("tokenName", v)} placeholder="e.g. ImageGen Pulse" />
-            <div>
-              <Field label="Token Symbol" value={form.tokenSymbol} onChange={(v) => update("tokenSymbol", v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8))} placeholder="e.g. IMGS" />
-              <p className="text-xs text-muted mt-1">2-8 characters, letters and numbers only</p>
-            </div>
-            <div>
-              <Field label="Total Supply" value={form.totalSupply} onChange={(v) => update("totalSupply", v)} type="number" />
-              <p className="text-xs text-muted mt-1">Max 100,000,000</p>
-            </div>
-            <div>
-              <Field label="Initial Price (USDC)" value={form.initialPrice} onChange={(v) => update("initialPrice", v)} type="number" />
-              <p className="text-xs text-muted mt-1">Price per Pulse token in USDC</p>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Kernel Policy</h2>
-            <p className="text-sm text-muted mb-6">
-              Set the governance rules for your agent.
-            </p>
-            <Field label="Approval Threshold (USDC)" value={form.approvalThreshold} onChange={(v) => update("approvalThreshold", v)} type="number" placeholder="Transactions above this require approval" />
-            <Field label="GTM Budget (USDC/month)" value={form.gtmBudget} onChange={(v) => update("gtmBudget", v)} type="number" placeholder="Monthly budget for GTM activities" />
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Prime Agent Setup</h2>
-            <p className="text-sm text-muted mb-6">
-              Configure your AI agent&apos;s personality and targets.
-            </p>
-            <div>
-              <label className="block text-xs text-muted mb-2">Agent Identity (immutable)</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={form.agentName}
-                  onChange={(e) => {
-                    const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
-                    update("agentName", v);
-                    checkNameAvailability(v);
-                  }}
-                  placeholder="e.g. marketbot"
-                  className="flex-1 bg-background border border-border px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent"
-                />
-                <span className="text-sm text-muted">.vantage</span>
-              </div>
-              <div className="mt-1.5 text-xs">
-                {nameChecking && <span className="text-muted">Checking...</span>}
-                {!nameChecking && nameAvailable === true && form.agentName.length >= 3 && (
-                  <span className="text-green-400">{form.agentName}.vantage is available</span>
-                )}
-                {!nameChecking && nameAvailable === false && (
-                  <span className="text-red-400">{form.agentName}.vantage is taken</span>
-                )}
-                {!nameChecking && nameAvailable === null && form.agentName.length > 0 && form.agentName.length < 3 && (
-                  <span className="text-muted">Minimum 3 characters</span>
-                )}
-              </div>
-              <p className="text-xs text-muted mt-1">This is your agent&apos;s permanent on-chain identity. It cannot be changed after registration.</p>
-            </div>
-            <Field label="Persona" value={form.persona} onChange={(v) => update("persona", v)} placeholder="e.g. A sharp, witty tech commentator" multiline />
-            <Field label="Target Audience" value={form.targetAudience} onChange={(v) => update("targetAudience", v)} placeholder="e.g. Indie developers building SaaS products" />
-            <div>
-              <label className="block text-xs text-muted mb-2">Tone</label>
-              <select
-                value={form.tone}
-                onChange={(e) => update("tone", e.target.value)}
-                className="w-full bg-background border border-border px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
-              >
-                <option value="professional">Professional</option>
-                <option value="casual">Casual</option>
-                <option value="witty">Witty</option>
-                <option value="technical">Technical</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-muted mb-2">GTM Channels</label>
-              <div className="flex flex-wrap gap-2">
-                {CHANNELS.map((ch) => (
-                  <button
-                    key={ch}
-                    onClick={() => {
-                      const channels = form.channels.includes(ch)
-                        ? form.channels.filter((c) => c !== ch)
-                        : [...form.channels, ch];
-                      update("channels", channels);
-                    }}
-                    className={`px-3 py-1.5 text-xs border transition-colors ${
-                      form.channels.includes(ch)
-                        ? "border-accent text-accent bg-surface"
-                        : "border-border text-muted hover:text-foreground"
-                    }`}
-                  >
-                    {ch}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-accent mb-1">Review & Deploy</h2>
-            <p className="text-sm text-muted mb-6">
-              Confirm your Vantage configuration before on-chain deployment.
-            </p>
-            <div className="space-y-4 text-sm">
-              <ReviewRow label="Product" value={form.productName} />
-              <ReviewRow label="Category" value={form.category} />
-              <ReviewRow label="Token" value={`${form.tokenName} (${form.tokenSymbol})`} />
-              <ReviewRow label="Supply" value={Number(form.totalSupply).toLocaleString()} />
-              <ReviewRow label="Price" value={`$${form.initialPrice}`} />
-              <ReviewRow label="Agent Identity" value={`${form.agentName}.vantage`} />
-              <ReviewRow label="Revenue Model" value="100% Agent Treasury (no external distribution)" />
-              <ReviewRow label="Creator Wallet" value={form.creatorWallet || address || ""} />
-              <ReviewRow label="Approval" value={`> $${form.approvalThreshold}`} />
-              <ReviewRow label="Budget" value={`$${form.gtmBudget}/mo`} />
-              <ReviewRow label="Persona" value={form.persona} />
-              <ReviewRow label="Audience" value={form.targetAudience} />
-              <ReviewRow label="Channels" value={form.channels.join(", ")} />
-              {form.serviceName && (
-                <>
-                  <ReviewRow label="Service" value={form.serviceName} />
-                  <ReviewRow label="Service Price" value={form.servicePrice ? `${form.servicePrice} USDC` : "—"} />
-                </>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {submitting && (
-        <div className="mb-6 border border-accent/30 bg-surface p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            <span className="text-sm text-accent">{deployStep || "Preparing..."}</span>
-          </div>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4].map((s) => (
-              <div
-                key={s}
-                className={`h-1 flex-1 transition-colors duration-300 ${
-                  s <= deployProgress ? "bg-accent" : "bg-border"
+      {/* Step Rail */}
+      <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar mb-12">
+        {STEPS.map((s, i) => {
+           const Icon = s.icon;
+           const isCurrent = step === i;
+           const isPast = step > i;
+           return (
+             <button
+                key={s.id}
+                onClick={() => i <= step && setStep(i)}
+                disabled={i > step}
+                className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all whitespace-nowrap ${
+                  isCurrent 
+                    ? "bg-primary border-primary text-black font-bold shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
+                    : isPast 
+                      ? "bg-white/5 border-emerald-500/20 text-emerald-500" 
+                      : "bg-white/2 border-white/5 text-muted opacity-40"
                 }`}
-              />
-            ))}
-          </div>
-          <div className="flex justify-between mt-1 text-xs text-muted">
-            <span>Wallet</span>
-            <span>Registry</span>
-            <span>Name</span>
-            <span>Database</span>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-6 border border-red-900 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          {error}
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex justify-between">
-        <button
-          onClick={() => setStep(Math.max(0, step - 1))}
-          disabled={step === 0}
-          className="px-6 py-2.5 text-sm border border-border text-foreground hover:bg-surface-hover transition-colors disabled:opacity-30 disabled:cursor-default"
-        >
-          Back
-        </button>
-        {step < 5 ? (
-          <button
-            onClick={() => setStep(step + 1)}
-            disabled={!canNext()}
-            className="px-6 py-2.5 text-sm bg-accent text-background font-medium hover:bg-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-default"
-          >
-            Next
-          </button>
-        ) : (
-          <button
-            onClick={handleLaunch}
-            disabled={submitting}
-            className="px-8 py-2.5 text-sm bg-accent text-background font-medium hover:bg-foreground transition-colors disabled:opacity-50"
-          >
-            {submitting ? (deployStep || "Deploying...") : "Launch Vantage"}
-          </button>
-        )}
+             >
+               <Icon className="w-4 h-4 text-inherit" />
+               <span className="text-xs tracking-wide">{s.id}</span>
+             </button>
+           );
+        })}
       </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+           key={step}
+           initial={{ opacity: 0, x: 20 }}
+           animate={{ opacity: 1, x: 0 }}
+           exit={{ opacity: 0, x: -20 }}
+           className="glass p-10 rounded-3xl border-white/5 min-h-[500px] flex flex-col"
+        >
+           <div className="flex-1">
+             {step === 0 && (
+               <div className="space-y-8">
+                  <SectionTitle title="Identity & Vision" desc="Define your product and the core problem it solves." />
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <Field label="Product Name" value={form.productName} onChange={(v) => update("productName", v)} placeholder="e.g. Nexus IA" />
+                    <div>
+                        <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Industry Vertical</label>
+                        <select 
+                          value={form.category} 
+                          onChange={(e) => update("category", e.target.value)}
+                          className="w-full bg-black/40 border border-white/5 px-4 py-3 rounded-xl text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                        >
+                          <option value="marketing">Marketing</option>
+                          <option value="finance">Finance</option>
+                          <option value="operations">Operations</option>
+                        </select>
+                    </div>
+                  </div>
+                  <Field label="Strategic Description" value={form.productDesc} onChange={(v) => update("productDesc", v)} placeholder="What will the agent scale?" multiline />
+               </div>
+             )}
+
+             {step === 1 && (
+                <div className="space-y-8 text-center pt-10">
+                   <SectionTitle title="Patron Registration" desc="You are currently authenticating as the Vantage Creator." center />
+                   <div className="p-8 border border-white/5 rounded-2xl bg-white/[0.02] inline-block">
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Linked Wallet</p>
+                      <div className="text-2xl font-mono text-primary truncate max-w-sm">{address}</div>
+                   </div>
+                   <p className="text-sm text-muted max-w-lg mx-auto leading-relaxed">
+                      This address will be the permanent root of trust for your agent. All revenue will flow to the treasury controlled by this key.
+                   </p>
+                </div>
+             )}
+
+             {step === 2 && (
+               <div className="space-y-8">
+                  <SectionTitle title="Pulse Tokenomics" desc="Configure the ownership structure for your corporation." />
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <Field label="Token Name" value={form.tokenName} onChange={(v) => update("tokenName", v)} placeholder="e.g. Nexus Pulse" />
+                    <Field label="Ticker Symbol" value={form.tokenSymbol} onChange={(v) => update("tokenSymbol", v.toUpperCase().slice(0, 6))} placeholder="e.g. NEXUS" />
+                    <Field label="Total Supply" value={form.totalSupply} onChange={(v) => update("totalSupply", v)} type="number" />
+                    <Field label="Target Float (USDC)" value={form.initialPrice} onChange={(v) => update("initialPrice", v)} type="number" />
+                  </div>
+               </div>
+             )}
+
+             {step === 3 && (
+                <div className="space-y-8">
+                   <SectionTitle title="Kernel Policies" desc="Set the autonomous guardrails for your Prime Agent." />
+                   <div className="grid md:grid-cols-2 gap-8">
+                      <div className="glass p-6 rounded-2xl border-white/5">
+                         <div className="flex items-center gap-3 mb-6">
+                            <Shield className="w-5 h-5 text-primary" />
+                            <h3 className="font-bold">Governance</h3>
+                         </div>
+                         <Field label="Approval Threshold (USDC)" value={form.approvalThreshold} onChange={(v) => update("approvalThreshold", v)} type="number" />
+                         <p className="text-[10px] text-muted mt-4 leading-relaxed italic">Transactions above this amount require multiple patron signatures.</p>
+                      </div>
+                      <div className="glass p-6 rounded-2xl border-white/5">
+                         <div className="flex items-center gap-3 mb-6">
+                            <Zap className="w-5 h-5 text-primary" />
+                            <h3 className="font-bold">Operations</h3>
+                         </div>
+                         <Field label="Monthly GTM Budget (USDC)" value={form.gtmBudget} onChange={(v) => update("gtmBudget", v)} type="number" />
+                         <p className="text-[10px] text-muted mt-4 leading-relaxed italic">The maximum monthly allowance for marketing and service acquisition.</p>
+                      </div>
+                   </div>
+                </div>
+             )}
+
+             {step === 4 && (
+                <div className="space-y-8">
+                   <SectionTitle title="Agent Identity" desc="Provision the intelligence that will run your Vantage." />
+                   <div className="grid md:grid-cols-2 gap-8 items-start">
+                      <div className="space-y-6">
+                        <Field label="Handle (.vantage)" value={form.agentName} onChange={(v) => {
+                            const val = v.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                            update("agentName", val);
+                            checkNameAvailability(val);
+                        }} placeholder="e.g. nexus-bot" />
+                        <div className="text-[10px] px-2">
+                           {nameChecking ? <span className="text-muted italic">Validating on Arc...</span> : (
+                             nameAvailable === true ? <span className="text-emerald-500 font-bold tracking-widest">UNIT_AVAILABLE</span> : (
+                               nameAvailable === false ? <span className="text-red-500 font-bold tracking-widest">UNIT_UNAVAILABLE</span> : null
+                             )
+                           )}
+                        </div>
+                        <Field label="Intelligence Persona" value={form.persona} onChange={(v) => update("persona", v)} multiline />
+                      </div>
+                      <div className="space-y-6">
+                         <Field label="Strategic Target" value={form.targetAudience} onChange={(v) => update("targetAudience", v)} />
+                         <div>
+                            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-4">Activation Channels</label>
+                            <div className="flex flex-wrap gap-2">
+                               {CHANNELS.map(ch => (
+                                 <button key={ch} onClick={() => {
+                                    const next = form.channels.includes(ch) ? form.channels.filter(c => c !== ch) : [...form.channels, ch];
+                                    update("channels", next);
+                                 }} className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
+                                    form.channels.includes(ch) ? "bg-primary border-primary text-black" : "border-white/10 text-muted hover:border-white/20"
+                                 }`}>{ch}</button>
+                               ))}
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             )}
+
+             {step === 5 && (
+                <div className="space-y-8">
+                   <SectionTitle title="Final Validation" desc="Review your configuration before committing to the network." />
+                   <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
+                      <ReviewItem label="Vantage Name" value={form.productName} />
+                      <ReviewItem label="Agent Handle" value={`${form.agentName}.vantage`} />
+                      <ReviewItem label="Ticker" value={form.tokenSymbol} />
+                      <ReviewItem label="Supply" value={form.totalSupply} />
+                      <ReviewItem label="Approval Gate" value={`$${form.approvalThreshold}`} />
+                      <ReviewItem label="Monthly Budget" value={`$${form.gtmBudget}`} />
+                   </div>
+                   <div className="mt-8 p-6 bg-primary/5 border border-primary/10 rounded-2xl">
+                      <p className="text-xs text-primary leading-relaxed">
+                         By launching, you are deploying a set of smart contracts on Arc Network and provisioning your Prime Agent. This action is immutable.
+                      </p>
+                   </div>
+                </div>
+             )}
+           </div>
+
+           <div className="flex items-center justify-between mt-12 pt-8 border-t border-white/5">
+              <button 
+                onClick={() => setStep(s => Math.max(0, s - 1))}
+                disabled={step === 0 || submitting}
+                className="flex items-center gap-2 text-muted hover:text-foreground transition-all disabled:opacity-30 font-bold text-xs"
+              >
+                <ArrowLeft className="w-4 h-4" /> PREVIOUS
+              </button>
+              
+              <div className="flex-1 px-12">
+                  {submitting && (
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold text-primary tracking-widest">
+                           <span>{deployStep?.toUpperCase()}</span>
+                           <span>{deployProgress * 25}%</span>
+                        </div>
+                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                           <motion.div 
+                              className="h-full bg-primary"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${deployProgress * 25}%` }}
+                           />
+                        </div>
+                    </div>
+                  )}
+              </div>
+
+              {step === 5 ? (
+                <button 
+                  onClick={handleLaunch}
+                  disabled={submitting}
+                  className="bg-primary text-black font-bold px-10 py-4 rounded-2xl hover:bg-primary/90 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+                >
+                  {submitting ? "PROVISIONING..." : "COMMIT GENESIS"} <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setStep(s => s + 1)}
+                  disabled={!canNext() || submitting}
+                  className="bg-white/5 hover:bg-white/10 border border-white/5 px-10 py-4 rounded-2xl font-bold text-xs transition-all disabled:opacity-30 disabled:grayscale"
+                >
+                  NEXT STEP
+                </button>
+              )}
+           </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder = "",
-  type = "text",
-  multiline = false,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  multiline?: boolean;
-}) {
-  const cls =
-    "w-full bg-background border border-border px-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent";
-  return (
-    <div>
-      <label className="block text-xs text-muted mb-2">{label}</label>
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={3}
-          className={`${cls} resize-none`}
-        />
-      ) : (
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className={cls}
-        />
-      )}
-    </div>
-  );
+function SectionTitle({ title, desc, center = false }: { title: string; desc: string; center?: boolean }) {
+    return (
+        <div className={center ? "text-center" : ""}>
+            <h2 className="text-2xl font-bold mb-2">{title}</h2>
+            <p className="text-sm text-muted">{desc}</p>
+        </div>
+    );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between py-2 border-b border-border">
-      <span className="text-muted">{label}</span>
-      <span className="text-foreground text-right max-w-[60%]">{value || "—"}</span>
-    </div>
-  );
+function Field({ label, value, onChange, placeholder = "", type = "text", multiline = false }: any) {
+    return (
+        <div className="space-y-3">
+            <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em]">{label}</label>
+            {multiline ? (
+                <textarea 
+                    value={value} 
+                    onChange={e => onChange(e.target.value)} 
+                    placeholder={placeholder}
+                    className="w-full bg-black/40 border border-white/5 px-4 py-3 rounded-xl text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors min-h-[120px]"
+                />
+            ) : (
+                <input 
+                    type={type} 
+                    value={value} 
+                    onChange={e => onChange(e.target.value)} 
+                    placeholder={placeholder}
+                    className="w-full bg-black/40 border border-white/5 px-4 py-3 rounded-xl text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                />
+            )}
+        </div>
+    );
+}
+
+function ReviewItem({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-center justify-between py-4 border-b border-white/5 group">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">{label}</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{value}</span>
+        </div>
+    );
 }

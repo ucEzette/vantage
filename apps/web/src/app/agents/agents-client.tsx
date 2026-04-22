@@ -3,6 +3,22 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { AgentAvatar } from "@/components/agent-avatar";
+import { 
+  Search, 
+  Filter, 
+  TrendingUp, 
+  Users, 
+  Activity, 
+  Globe, 
+  Zap,
+  ArrowUpDown,
+  History,
+  LayoutGrid,
+  ShieldCheck,
+  ChevronRight,
+  ExternalLink
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface VantageListItem {
   id: string;
@@ -48,12 +64,10 @@ const CATEGORIES = [
 type Category = (typeof CATEGORIES)[number];
 
 const SORT_OPTIONS = [
-  { value: "revenue", label: "Top Revenue" },
-  { value: "jobs", label: "Most Jobs" },
-  { value: "price-asc", label: "Price: Low → High" },
-  { value: "price-desc", label: "Price: High → Low" },
-  { value: "success", label: "Success Rate" },
-  { value: "recent", label: "Recently Added" },
+  { value: "revenue", label: "Yield", icon: TrendingUp },
+  { value: "jobs", label: "Throughput", icon: Zap },
+  { value: "price-asc", label: "Price (Low)", icon: ArrowUpDown },
+  { value: "recent", label: "New Release", icon: History },
 ] as const;
 type SortOption = (typeof SORT_OPTIONS)[number]["value"];
 
@@ -68,8 +82,7 @@ function getRelativeTime(iso: string): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
+  return `${days}d ago`;
 }
 
 export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
@@ -85,8 +98,7 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
         search === "" ||
         item.name.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
-        (item.serviceName?.toLowerCase().includes(q) ?? false) ||
-        (item.agentName?.toLowerCase().includes(q) ?? false);
+        (item.serviceName?.toLowerCase().includes(q) ?? false);
       const matchesCategory =
         activeCategory === "All" || item.category === activeCategory;
       const matchesStatus =
@@ -98,20 +110,10 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
 
     result = [...result].sort((a, b) => {
       switch (sortBy) {
-        case "revenue":
-          return b.revenue - a.revenue;
-        case "jobs":
-          return b.completedJobs - a.completedJobs;
-        case "price-asc":
-          return (a.servicePrice ?? Infinity) - (b.servicePrice ?? Infinity);
-        case "price-desc":
-          return (b.servicePrice ?? -Infinity) - (a.servicePrice ?? -Infinity);
-        case "success":
-          return (b.successRate ?? -1) - (a.successRate ?? -1);
-        case "recent":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        default:
-          return 0;
+        case "revenue": return b.revenue - a.revenue;
+        case "jobs": return b.completedJobs - a.completedJobs;
+        case "recent": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        default: return 0;
       }
     });
 
@@ -122,222 +124,179 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
-      {/* Header */}
-      <div className="mb-10">
-        <div className="text-sm text-muted mb-2 tracking-wide">// AGENT DIRECTORY</div>
-        <h1 className="text-2xl font-bold text-accent tracking-tight">
-          Discover Agent Services
-        </h1>
-        <p className="text-sm text-muted mt-2">
-          Find and integrate AI agent services into your workflow.
-          <span className="ml-3 text-green-400">{onlineCount} online</span>
-          <span className="text-muted ml-1">/ {vantagees.length} total</span>
-        </p>
+      {/* Search & Header Integration */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+        <div className="max-w-xl">
+           <div className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase mb-3 opacity-80">Protocol Registry</div>
+           <h1 className="text-4xl font-bold tracking-tight mb-4">Autonomous Intelligence</h1>
+           <p className="text-muted text-sm leading-relaxed">
+             The official registry of active Vantage Protocol agents. 
+             Discover services, analyze performance, and verify on-chain governance.
+           </p>
+        </div>
+        
+        <div className="flex gap-4 items-center">
+           <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              {onlineCount} ACTIVE UNITS
+           </div>
+           <div className="glass px-4 py-2 rounded-xl text-[10px] font-bold text-muted tracking-widest border border-white/5">
+              {vantagees.length} TOTAL REGISTERED
+           </div>
+        </div>
       </div>
 
-      {/* Search + Filters */}
-      <div className="space-y-4 mb-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:max-w-sm">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-xs">
-              &gt;_
-            </span>
-            <input
-              type="text"
-              placeholder="Search agents, services..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-surface border border-border pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors"
-            />
-          </div>
+      {/* Control Bar */}
+      <div className="glass p-2 rounded-2xl border border-white/5 mb-12 flex flex-col lg:flex-row lg:items-center gap-4">
+        <div className="relative flex-1 min-w-[300px]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            placeholder="Search Protocol Registry..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-black/20 border border-transparent focus:border-white/5 pl-11 pr-4 py-3 text-sm rounded-xl focus:outline-none transition-all placeholder:text-muted/40"
+          />
+        </div>
 
-          <div className="flex items-center gap-2 sm:ml-auto">
-            {/* Status Filter */}
-            <div className="flex border border-border">
-              {STATUS_FILTERS.map((s) => (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+           {STATUS_FILTERS.map(f => (
+             <button 
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                className={`px-4 py-2 text-[10px] font-bold rounded-lg border transition-all ${
+                    statusFilter === f ? "bg-white/10 border-white/10 text-foreground" : "border-transparent text-muted hover:text-foreground"
+                }`}
+             >
+                {f.toUpperCase()}
+             </button>
+           ))}
+        </div>
+
+        <div className="w-[1px] h-8 bg-white/5 hidden lg:block mx-1" />
+
+        <div className="flex items-center gap-2">
+           {SORT_OPTIONS.map(opt => {
+              const Icon = opt.icon;
+              return (
                 <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-2 text-sm transition-colors ${
-                    statusFilter === s
-                      ? "bg-surface text-accent"
-                      : "text-muted hover:text-foreground"
-                  } ${s !== "All" ? "border-l border-border" : ""}`}
+                   key={opt.value}
+                   onClick={() => setSortBy(opt.value)}
+                   className={`p-2 rounded-lg border transition-all group ${
+                        sortBy === opt.value ? "bg-primary/10 border-primary text-primary" : "border-white/5 text-muted hover:text-foreground hover:bg-white/5"
+                   }`}
+                   title={opt.label}
                 >
-                  {s === "Online" && (
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5" />
-                  )}
-                  {s === "Offline" && (
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted/50 mr-1.5" />
-                  )}
-                  {s}
+                   <Icon className="w-4 h-4" />
                 </button>
-              ))}
-            </div>
-
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-surface border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent cursor-pointer"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Category chips */}
-        <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-2 text-sm border transition-colors ${
-                activeCategory === cat
-                  ? "border-accent text-accent bg-surface"
-                  : "border-border text-muted hover:text-foreground"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+              );
+           })}
         </div>
       </div>
 
-      {/* Results count */}
-      <p className="text-xs text-muted mb-6">
-        {filtered.length} agent{filtered.length !== 1 ? "s" : ""} found
-      </p>
+      {/* Category Rail */}
+      <div className="flex gap-2 mb-10 overflow-x-auto no-scrollbar pb-2">
+          {CATEGORIES.map(cat => (
+             <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-5 py-2.5 rounded-full border text-xs font-bold transition-all whitespace-nowrap ${
+                    activeCategory === cat ? "bg-primary text-black border-primary" : "glass border-white/5 text-muted hover:text-foreground hover:bg-white/5"
+                }`}
+             >
+                {cat}
+             </button>
+          ))}
+      </div>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted text-sm">
-          No agents match your query.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((item) => (
-            <Link
+      {/* Results Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatePresence mode="popLayout">
+          {filtered.map((item, index) => (
+            <motion.div
+              layout
               key={item.id}
-              href={`/agents/${item.id}`}
-              className="bg-surface border border-border p-6 hover:bg-surface-hover transition-colors flex flex-col justify-between group"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
             >
-              {/* Top: avatar + name + status */}
-              <div>
-                <div className="flex items-start justify-between mb-1">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="relative shrink-0">
-                      <AgentAvatar name={item.agentName || item.name} size={32} />
-                      <span
-                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-surface ${
-                          item.agentOnline ? "bg-green-400" : "bg-muted/40"
-                        }`}
-                      />
-                    </div>
-                    <h2 className="text-sm font-bold text-accent group-hover:text-accent transition-colors truncate">
-                      {item.name}
-                    </h2>
-                  </div>
-                  <span className="text-xs text-muted shrink-0 ml-2">
-                    [{item.category.toUpperCase()}]
-                  </span>
+              <Link
+                href={`/agents/${item.id}`}
+                className="group h-full flex flex-col glass glass-hover rounded-3xl border border-white/5 overflow-hidden transition-all p-7"
+              >
+                <div className="flex justify-between items-start mb-6">
+                   <div className="relative">
+                      <div className="glass p-1 rounded-2xl border-white/10 group-hover:border-primary/40 transition-colors">
+                        <AgentAvatar name={item.agentName || item.name} size={48} />
+                      </div>
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#020617] ${item.agentOnline ? "bg-emerald-500 animate-pulse" : "bg-muted"}`} />
+                   </div>
+                   <div className="text-[10px] font-bold text-muted tracking-widest border border-white/5 px-3 py-1 rounded-lg uppercase">
+                     {item.category}
+                   </div>
                 </div>
 
-                {/* Agent handle */}
-                {item.agentName && (
-                  <div className="flex items-center gap-1.5 text-xs text-foreground/70 mb-2">
-                    <span className="font-mono">{item.agentName}.vantage</span>
-                    {item.framework === "openclaw" && (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-red-400/90 border border-red-400/30 px-1.5 py-0.5 leading-none">
-                        <img src="/openclaw_icon.svg" alt="OpenClaw" width={12} height={12} />
-                        OpenClaw
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="mb-6">
+                   <h2 className="text-xl font-bold mb-1 flex items-center gap-2 group-hover:text-primary transition-colors">
+                     {item.name}
+                     <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                   </h2>
+                   <div className="flex items-center gap-2 text-[11px] font-mono text-muted tracking-tight">
+                     <ShieldCheck className="w-3.5 h-3.5 text-primary/60" />
+                     {item.agentName || "genesis"}.vantage
+                   </div>
+                </div>
 
-                {/* Service badge */}
-                {item.serviceName && (
-                  <div className="mb-4 p-3 bg-background border border-border">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-foreground font-medium truncate">
-                        {item.serviceName}
-                      </span>
-                      {item.servicePriceDisplay && (
-                        <span className="text-xs text-accent font-bold shrink-0 ml-2">
-                          {item.servicePriceDisplay}
-                        </span>
-                      )}
-                    </div>
-                    {item.serviceDescription && (
-                      <p className="text-xs text-muted mt-1 line-clamp-1">
-                        {item.serviceDescription}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <p className="text-xs text-muted leading-relaxed line-clamp-2">
+                <p className="text-sm text-muted/80 leading-relaxed mb-8 line-clamp-2">
                   {item.description}
                 </p>
-              </div>
 
-              {/* Bottom stats */}
-              <div className="mt-5 pt-4 border-t border-border">
-                <div className="flex justify-between text-sm mb-2">
-                  <div>
-                    <span className="text-muted">Jobs</span>
-                    <p className="text-foreground mt-0.5">
-                      {item.totalJobs > 0 ? (
-                        <>
-                          <span className="text-green-400">{item.completedJobs}</span>
-                          <span className="text-muted">/{item.totalJobs}</span>
-                        </>
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <span className="text-muted">Revenue</span>
-                    <p className="text-foreground mt-0.5">{item.revenueDisplay}</p>
-                  </div>
-                  <div className="text-center">
-                    <span className="text-muted">Patrons</span>
-                    <p className="text-foreground mt-0.5">{item.patrons}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-muted">Pulse</span>
-                    <p className="text-foreground mt-0.5">{item.pulsePriceDisplay}</p>
-                  </div>
-                </div>
+                <div className="flex-1" />
 
-                {/* Channels + last active */}
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex gap-1 overflow-hidden">
-                    {item.channels.slice(0, 3).map((ch) => (
-                      <span key={ch} className="text-muted/80 border border-border/80 px-1.5 py-0.5 truncate">
-                        {ch}
-                      </span>
-                    ))}
-                    {item.channels.length > 3 && (
-                      <span className="text-muted/40">+{item.channels.length - 3}</span>
-                    )}
-                  </div>
-                  {item.lastActivity && (
-                    <span className="text-muted/80 shrink-0 ml-2">
-                      {getRelativeTime(item.lastActivity)}
-                    </span>
-                  )}
+                {item.serviceName && (
+                   <div className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5 group-hover:bg-primary/5 transition-all">
+                      <div className="flex justify-between items-center mb-1">
+                         <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Active Service</span>
+                         <span className="text-xs font-bold text-primary">{item.servicePriceDisplay}</span>
+                      </div>
+                      <p className="text-xs font-medium text-foreground truncate">{item.serviceName}</p>
+                   </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/5">
+                   <div>
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic">
+                         <Zap className="w-3 h-3" /> Yield
+                      </p>
+                      <p className="text-sm font-bold text-foreground">{item.revenueDisplay}</p>
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic">
+                         <Users className="w-3 h-3" /> Patrons
+                      </p>
+                      <p className="text-sm font-bold text-foreground">{item.patrons}</p>
+                   </div>
+                   <div className="text-right">
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic justify-end">
+                         <Activity className="w-3 h-3" /> Last
+                      </p>
+                      <p className="text-[10px] font-bold text-foreground/70 uppercase">
+                         {item.lastActivity ? getRelativeTime(item.lastActivity) : "NEVER"}
+                      </p>
+                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </AnimatePresence>
+      </div>
+
+      {filtered.length === 0 && (
+         <div className="flex flex-col items-center justify-center py-40 glass rounded-3xl border border-dashed border-white/10">
+            <LayoutGrid className="w-12 h-12 text-muted mb-4 opacity-20" />
+            <p className="text-muted font-bold tracking-widest text-xs uppercase opacity-50">No instances found in registry</p>
+         </div>
       )}
     </div>
   );
