@@ -5,6 +5,23 @@ import { WalletGate } from "@/components/wallet-gate";
 import { useWallet } from "@/components/providers";
 import { WorldIdVerify, WORLD_ACTIONS } from "@/components/world-id-verify";
 import { AgentAvatar } from "@/components/agent-avatar";
+import { 
+  TrendingUp, 
+  Users, 
+  Activity as ActivityIcon, 
+  CheckCircle2, 
+  Clock, 
+  XCircle,
+  Shield,
+  Layers,
+  Cpu,
+  BarChart3,
+  ExternalLink,
+  Copy,
+  ChevronRight,
+  Plus
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DashboardData {
   stats: {
@@ -72,30 +89,40 @@ interface DashboardData {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const color =
-    status === "completed" || status === "online"
-      ? "text-green-500"
-      : status === "pending"
-        ? "text-yellow-500"
-        : "text-muted";
+  const isOnline = status === "completed" || status === "online";
+  const isPending = status === "pending";
+  
   return (
-    <span className={`text-xs ${color}`}>[{status.toUpperCase()}]</span>
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest border transition-colors ${
+      isOnline 
+        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+        : isPending 
+          ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+          : "bg-white/5 text-muted border-white/5"
+    }`}>
+      {isOnline && <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />}
+      {status.toUpperCase()}
+    </span>
   );
 }
 
 function TypeBadge({ type }: { type: string }) {
   return (
-    <span className="text-xs text-muted">[{type.toUpperCase()}]</span>
+    <span className="text-[10px] font-bold text-muted border border-white/5 px-2 py-0.5 rounded bg-white/5 tracking-widest">
+      {type.toUpperCase()}
+    </span>
   );
 }
 
 export function DashboardClient() {
   return (
     <WalletGate
-      title="Connect Wallet to Access Dashboard"
-      description="Your patron dashboard shows your portfolio, pending approvals, and agent activity. Connect your wallet to view your Vantage holdings."
+      title="Access Command Center"
+      description="Connect your authorized wallet to manage your Vantage agents, approve transactions, and oversee on-chain governance."
     >
-      <DashboardLoader />
+      <div className="pt-8">
+        <DashboardLoader />
+      </div>
     </WalletGate>
   );
 }
@@ -124,75 +151,27 @@ function DashboardLoader() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-10 animate-pulse">
-        <div className="mb-10 space-y-2">
-          <div className="h-5 w-32 bg-zinc-800 rounded" />
-          <div className="h-4 w-72 bg-zinc-800/60 rounded" />
+      <div className="max-w-7xl mx-auto px-6 space-y-12">
+        <div className="space-y-4">
+          <div className="h-8 w-48 bg-white/5 rounded-lg animate-pulse" />
+          <div className="h-4 w-96 bg-white/5 rounded animate-pulse" />
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-surface border border-border p-5 space-y-2">
-              <div className="h-3 w-24 bg-zinc-800 rounded" />
-              <div className="h-7 w-20 bg-zinc-800 rounded" />
-            </div>
+            <div key={i} className="h-32 glass rounded-2xl animate-pulse" />
           ))}
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="h-4 w-28 bg-zinc-800 rounded" />
-            <div className="bg-surface border border-border divide-y divide-border">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-4 flex items-center justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 w-48 bg-zinc-800 rounded" />
-                    <div className="h-3 w-32 bg-zinc-800/50 rounded" />
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="h-8 w-20 bg-zinc-800 rounded" />
-                    <div className="h-8 w-20 bg-zinc-800 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="h-4 w-28 bg-zinc-800 rounded" />
-            <div className="bg-surface border border-border divide-y divide-border">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-4 flex items-center gap-3">
-                  <div className="w-5 h-5 bg-zinc-800 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3 w-28 bg-zinc-800 rounded" />
-                    <div className="h-3 w-16 bg-zinc-800/50 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
 
-  if (!data) {
-    return (
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-10">
-          <h1 className="text-accent text-lg font-bold tracking-wider mb-1">DASHBOARD</h1>
-          <p className="text-muted text-sm">Failed to load dashboard data.</p>
-        </div>
-      </div>
-    );
-  }
+  if (!data) return null;
 
   return <DashboardContent {...data} onRefresh={fetchData} />;
 }
 
 function ApiKeyCell({ masked, raw }: { vantageId: string; masked: string | null; raw: string | null }) {
   const [copied, setCopied] = useState(false);
-
   function handleCopy() {
     if (raw) {
       navigator.clipboard.writeText(raw);
@@ -200,17 +179,17 @@ function ApiKeyCell({ masked, raw }: { vantageId: string; masked: string | null;
       setTimeout(() => setCopied(false), 2000);
     }
   }
-
-  if (!masked) return <span className="text-muted">—</span>;
-
+  if (!masked) return <span className="text-muted italic opacity-50">NOT_PROVISIONED</span>;
   return (
-    <div className="flex items-center gap-2">
-      <code className="text-foreground text-[11px] bg-background px-1.5 py-0.5 break-all">{masked}</code>
+    <div className="flex items-center gap-3">
+      <code className="text-foreground text-[11px] font-mono bg-black/40 border border-white/5 px-2 py-1 rounded truncate max-w-[200px]">
+        {masked}
+      </code>
       <button
         onClick={handleCopy}
-        className="text-muted hover:text-accent text-[10px] shrink-0"
-        title="Copy"
+        className="flex items-center gap-1.5 text-[10px] font-bold text-muted hover:text-primary transition-colors"
       >
+        <Copy className="w-3 h-3" />
         {copied ? "COPIED" : "COPY"}
       </button>
     </div>
@@ -220,12 +199,12 @@ function ApiKeyCell({ masked, raw }: { vantageId: string; masked: string | null;
 function DashboardContent({ stats, approvals: initialApprovals, approvalHistory: initialHistory, activities, agents, revenueStreams, vantageManagement, onRefresh }: DashboardData & { onRefresh: () => void }) {
   const [approvals, setApprovals] = useState(initialApprovals);
   const [approvalHistory, setApprovalHistory] = useState(initialHistory);
-  const [approvalTab, setApprovalTab] = useState<"pending" | "history">("pending");
-  const [approvalError, setApprovalError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
+  const [error, setError] = useState<string | null>(null);
   const { address } = useWallet();
 
   async function handleDecision(id: string, vantageId: string, status: "approved" | "rejected", worldIdProof: unknown) {
-    setApprovalError(null);
+    setError(null);
     const target = approvals.find((a) => a.id === id);
     try {
       const res = await fetch(`/api/vantage/${vantageId}/approvals/${id}`, {
@@ -237,395 +216,327 @@ function DashboardContent({ stats, approvals: initialApprovals, approvalHistory:
         const result = await res.json();
         setApprovals((prev) => prev.filter((a) => a.id !== id));
         if (target) {
-          setApprovalHistory((prev) => [
-            {
-              ...target,
-              status,
-              decidedBy: address ?? null,
-              decidedAt: new Date().toISOString(),
-              txHash: result.txHash ?? null,
-            },
-            ...prev,
-          ]);
+          setApprovalHistory((prev) => [{
+            ...target,
+            status,
+            decidedBy: address ?? null,
+            decidedAt: new Date().toISOString(),
+            txHash: result.txHash ?? null,
+          } as any, ...prev]);
         }
       } else {
         const data = await res.json().catch(() => null);
-        setApprovalError(data?.error ?? `Failed to ${status === "approved" ? "approve" : "reject"} (${res.status})`);
+        setError(data?.error ?? "Decision failed");
       }
     } catch {
-      setApprovalError("Network error — please try again.");
+      setError("Connection error");
     }
   }
 
-  const hasNoData = agents.length === 0 && vantageManagement.length === 0;
-
   const PORTFOLIO_STATS = [
-    { label: "Total Value", value: stats.totalValue },
-    { label: "Active Vantage", value: stats.activeVantage.toString() },
-    { label: "Total Revenue", value: stats.totalRevenue },
-    { label: "Pending Approvals", value: stats.pendingCount.toString() },
+    { label: "Portfolio Value", value: stats.totalValue, icon: TrendingUp },
+    { label: "Active Vantage", value: stats.activeVantage.toString(), icon: Shield },
+    { label: "Total Revenue", value: stats.totalRevenue, icon: BarChart3 },
+    { label: "Pending Tasks", value: stats.pendingCount.toString(), icon: Clock },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10">
-      <div className="mb-10">
-        <h1 className="text-accent text-lg font-bold tracking-wider mb-1">DASHBOARD</h1>
-        <p className="text-muted text-sm">patron control panel &mdash; portfolio overview, approvals, activity</p>
+    <div className="max-w-7xl mx-auto px-6 pb-24">
+      {/* Header */}
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Protocol Command</h1>
+          <p className="text-muted text-sm flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+            Live monitoring & governance for your agent corporations
+          </p>
+        </div>
+        <button 
+          onClick={onRefresh}
+          className="glass hover:bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+        >
+          <ActivityIcon className="w-3.5 h-3.5" />
+          Refresh Data
+        </button>
       </div>
 
-      {hasNoData ? (
-        <div className="bg-surface border border-border p-10 text-center">
-          <p className="text-muted text-sm mb-2">No agents found for your wallet.</p>
-          <p className="text-muted text-xs">Create or join a Vantage to see your dashboard.</p>
-        </div>
-      ) : (
-        <>
-          {/* Portfolio Overview */}
-          <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// PORTFOLIO OVERVIEW</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {PORTFOLIO_STATS.map((stat) => (
-                <div key={stat.label} className="bg-surface border border-border p-5 hover:bg-surface-hover transition-colors">
-                  <p className="text-muted text-sm mb-2 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-accent text-2xl font-bold">{stat.value}</p>
+      {/* Main Stats Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+        {PORTFOLIO_STATS.map((stat) => (
+          <div key={stat.label} className="group glass p-6 rounded-2xl border border-white/5 glass-hover transition-all relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <stat.icon className="w-12 h-12" />
+            </div>
+            <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mb-3">{stat.label}</p>
+            <p className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{stat.value}</p>
+          </div>
+        ))}
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Approvals & Activity */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Approval Queue */}
+          <section className="glass rounded-2xl border border-white/5 overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+              <div className="flex gap-6">
+                <button
+                  onClick={() => setActiveTab("pending")}
+                  className={`text-xs font-bold tracking-widest transition-colors flex items-center gap-2 ${
+                    activeTab === "pending" ? "text-primary" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  PENDING TASKS [{approvals.length}]
+                </button>
+                <button
+                  onClick={() => setActiveTab("history")}
+                  className={`text-xs font-bold tracking-widest transition-colors flex items-center gap-2 ${
+                    activeTab === "history" ? "text-primary" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <ActivityIcon className="w-3.5 h-3.5" />
+                  HISTORY
+                </button>
+              </div>
+            </div>
+
+            <div className="divide-y divide-white/5 min-h-[300px]">
+              <AnimatePresence mode="wait">
+                {activeTab === "pending" ? (
+                  <motion.div
+                    key="pending"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="divide-y divide-white/5"
+                  >
+                    {approvals.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-muted space-y-3">
+                        <CheckCircle2 className="w-8 h-8 opacity-20" />
+                        <p className="text-sm italic">Queue is clear. Agents are autonomous.</p>
+                      </div>
+                    ) : (
+                      approvals.map((item) => (
+                        <div key={item.id} className="p-6 hover:bg-white/[0.02] transition-colors group">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-2">
+                                <TypeBadge type={item.type} />
+                                <span className="text-[10px] font-bold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded">
+                                  {item.vantageName}
+                                </span>
+                              </div>
+                              <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
+                              <p className="text-sm text-muted leading-relaxed line-clamp-2">{item.description}</p>
+                              {item.amount && (
+                                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-sm font-mono text-foreground font-bold">
+                                  <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                                  {item.amount}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <WorldIdVerify
+                                action={WORLD_ACTIONS.approve}
+                                signal={address ?? undefined}
+                                onSuccess={(p) => handleDecision(item.id, item.vantageId, "approved", p)}
+                              >
+                                {({ verify, loading }) => (
+                                  <button
+                                    onClick={verify}
+                                    disabled={loading}
+                                    className="px-6 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50"
+                                  >
+                                    {loading ? "VERIFYING..." : "APPROVE"}
+                                  </button>
+                                )}
+                              </WorldIdVerify>
+                              <button
+                                onClick={() => handleDecision(item.id, item.vantageId, "rejected", null)}
+                                className="px-6 py-2.5 rounded-xl border border-white/10 hover:border-red-500/50 hover:text-red-500 transition-all text-xs font-bold"
+                              >
+                                REJECT
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="history"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="divide-y divide-white/5"
+                  >
+                    {approvalHistory.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-muted">
+                        <p className="text-sm italic">Status history unavailable.</p>
+                      </div>
+                    ) : (
+                      approvalHistory.map((item) => (
+                        <div key={item.id} className="p-6 opacity-80 hover:opacity-100 transition-opacity">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <StatusBadge status={item.status} />
+                                <span className="text-[10px] font-bold text-muted">{item.vantageName}</span>
+                              </div>
+                              <h4 className="text-sm font-bold text-foreground mb-1">{item.title}</h4>
+                              <div className="flex items-center gap-4 mt-2 text-[10px] font-bold text-muted uppercase tracking-wider">
+                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(item.timestamp).toLocaleDateString()}</span>
+                                {item.txHash && (
+                                  <a 
+                                    href={`https://hashscan.io/testnet/transaction/${item.txHash}`}
+                                    target="_blank"
+                                    className="flex items-center gap-1 text-primary hover:underline"
+                                  >
+                                    <ExternalLink className="w-3 h-3" /> ON-CHAIN
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </section>
+
+          {/* Revenue Streams */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <h2 className="text-xs font-bold tracking-[0.2em] text-muted uppercase">Global Treasury Stream</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {revenueStreams.map((rs) => (
+                <div key={rs.vantageId} className="glass p-6 rounded-2xl border border-white/5">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <AgentAvatar name={rs.vantageName} size={24} />
+                      <h3 className="font-bold text-foreground">{rs.vantageName}</h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-primary">${rs.totalRevenue.toFixed(2)}</p>
+                      <p className="text-[10px] text-muted uppercase tracking-wider font-bold">Total Yield</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {rs.recentTx.slice(0, 3).map((tx, i) => (
+                      <div key={i} className="flex items-center justify-between py-2 border-t border-white/5 text-xs">
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-medium uppercase tracking-tight">{tx.source}</span>
+                          <span className="text-[10px] text-muted">{new Date(tx.date).toLocaleDateString()}</span>
+                        </div>
+                        <span className="text-emerald-400 font-bold font-mono">+${tx.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </section>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            {/* Approval Queue */}
-            <section className="lg:col-span-2">
-              <div className="flex items-center gap-4 mb-4">
-                <button
-                  onClick={() => setApprovalTab("pending")}
-                  className={`text-sm tracking-wide transition-colors ${approvalTab === "pending" ? "text-accent" : "text-muted hover:text-foreground"}`}
-                >
-                  // PENDING ({approvals.length})
-                </button>
-                <button
-                  onClick={() => setApprovalTab("history")}
-                  className={`text-sm tracking-wide transition-colors ${approvalTab === "history" ? "text-accent" : "text-muted hover:text-foreground"}`}
-                >
-                  // HISTORY ({approvalHistory.length})
-                </button>
-              </div>
-
-              {approvalError && (
-                <div className="mb-3 bg-red-950 border border-red-800 text-red-400 text-xs px-4 py-2.5 flex items-center justify-between">
-                  <span>{approvalError}</span>
-                  <button onClick={() => setApprovalError(null)} className="text-red-500 hover:text-red-300 ml-4">DISMISS</button>
-                </div>
-              )}
-
-              {approvalTab === "pending" && (
-                <div className="bg-surface border border-border divide-y divide-border">
-                  {approvals.length === 0 && (
-                    <div className="p-6 text-muted text-sm text-center">No pending approvals.</div>
-                  )}
-                  {approvals.map((item) => (
-                    <div key={item.id} className="p-4 hover:bg-surface-hover transition-colors">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TypeBadge type={item.type} />
-                            <span className="text-xs text-muted">{item.vantageName}</span>
-                            {item.amount && <span className="text-xs text-accent">{item.amount}</span>}
-                          </div>
-                          <p className="text-sm text-foreground truncate">{item.title}</p>
-                          {item.description && (
-                            <p className="text-xs text-muted mt-0.5">{item.description}</p>
-                          )}
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <WorldIdVerify
-                            action={WORLD_ACTIONS.approve}
-                            signal={address ?? undefined}
-                            onSuccess={(proof) => handleDecision(item.id, item.vantageId, "approved", proof)}
-                          >
-                            {({ verify, loading: verifying }) => (
-                              <button
-                                onClick={verify}
-                                disabled={verifying}
-                                className="border border-green-800 text-green-500 px-3 py-1.5 text-xs hover:bg-green-950 transition-colors disabled:opacity-50"
-                              >
-                                {verifying ? "..." : "APPROVE"}
-                              </button>
-                            )}
-                          </WorldIdVerify>
-                          <WorldIdVerify
-                            action={WORLD_ACTIONS.approve}
-                            signal={address ?? undefined}
-                            onSuccess={(proof) => handleDecision(item.id, item.vantageId, "rejected", proof)}
-                          >
-                            {({ verify, loading: verifying }) => (
-                              <button
-                                onClick={verify}
-                                disabled={verifying}
-                                className="border border-red-900 text-red-500 px-3 py-1.5 text-xs hover:bg-red-950 transition-colors disabled:opacity-50"
-                              >
-                                {verifying ? "..." : "REJECT"}
-                              </button>
-                            )}
-                          </WorldIdVerify>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {approvalTab === "history" && (
-                <div className="bg-surface border border-border divide-y divide-border">
-                  {approvalHistory.length === 0 && (
-                    <div className="p-6 text-muted text-sm text-center">No approval history.</div>
-                  )}
-                  {approvalHistory.map((item) => (
-                    <div key={item.id} className="p-4 hover:bg-surface-hover transition-colors">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TypeBadge type={item.type} />
-                            <span className="text-xs text-muted">{item.vantageName}</span>
-                            {item.amount && <span className="text-xs text-accent">{item.amount}</span>}
-                            <span className={`text-xs font-bold ${item.status === "approved" ? "text-green-500" : "text-red-500"}`}>
-                              [{item.status.toUpperCase()}]
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground truncate">{item.title}</p>
-                          {item.description && (
-                            <p className="text-xs text-muted mt-0.5">{item.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-1.5 text-xs text-muted">
-                            {item.decidedAt && (
-                              <span>{new Date(item.decidedAt).toLocaleString()}</span>
-                            )}
-                            {item.decidedBy && (
-                              <>
-                                <span>&middot;</span>
-                                <span className="font-mono">{item.decidedBy.slice(0, 6)}...{item.decidedBy.slice(-4)}</span>
-                              </>
-                            )}
-                            {item.txHash && (
-                              <>
-                                <span>&middot;</span>
-                                <a
-                                  href={`https://hashscan.io/testnet/transaction/${item.txHash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-accent hover:underline font-mono"
-                                >
-                                  TX {item.txHash.slice(0, 8)}...{item.txHash.slice(-6)}
-                                </a>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Agent Status */}
-            <section>
-              <h2 className="text-sm text-muted mb-4 tracking-wide">// AGENT STATUS</h2>
-              <div className="bg-surface border border-border divide-y divide-border">
-                {agents.length === 0 && (
-                  <div className="p-6 text-muted text-sm text-center">No agents.</div>
-                )}
-                {agents.map((agent, i) => (
-                  <div key={`${agent.name}-${i}`} className="p-4 flex items-center justify-between hover:bg-surface-hover transition-colors">
-                    <div className="flex items-center gap-2">
-                      <AgentAvatar name={agent.name} size={20} className="shrink-0" />
+        {/* Right Column: Agents & Management */}
+        <div className="lg:col-span-4 space-y-8">
+          {/* Agent Status */}
+          <section className="glass rounded-2xl border border-white/5 overflow-hidden">
+             <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                <h2 className="text-xs font-bold tracking-[0.2em] text-muted uppercase">Active Units</h2>
+                <Users className="w-3.5 h-3.5 text-muted" />
+             </div>
+             <div className="divide-y divide-white/5">
+               {agents.map((agent, i) => (
+                 <div key={i} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center gap-3">
+                      <AgentAvatar name={agent.name} size={32} />
                       <div>
-                        <p className="text-sm text-foreground">{agent.name}</p>
-                        <p className="text-xs text-muted mt-0.5">last: {agent.lastActive}</p>
+                        <p className="text-sm font-bold text-foreground">{agent.name}</p>
+                        <p className="text-[10px] text-muted flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {agent.lastActive}
+                        </p>
                       </div>
                     </div>
                     <StatusBadge status={agent.status} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
+                 </div>
+               ))}
+               <Link href="/launch" className="flex items-center justify-center p-4 text-[10px] font-bold text-muted hover:text-primary transition-colors group">
+                  <Plus className="w-3 h-3 mr-2 group-hover:scale-125 transition-transform" />
+                  PROVISION NEW AGENT
+               </Link>
+             </div>
+          </section>
 
-          {/* Revenue Stream */}
-          <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// REVENUE STREAM</h2>
-            {revenueStreams.length === 0 ? (
-              <div className="bg-surface border border-border p-6 text-muted text-sm text-center">No revenue data yet.</div>
-            ) : (
-              <div className="space-y-4">
-                {revenueStreams.map((rs) => (
-                  <div key={rs.vantageId} className="bg-surface border border-border p-6">
+          {/* Vantage Management List */}
+          <section className="space-y-4">
+             <div className="flex items-center gap-3">
+                <Shield className="w-4 h-4 text-primary" />
+                <h2 className="text-xs font-bold tracking-[0.2em] text-muted uppercase">Protocol Governance</h2>
+             </div>
+             <div className="space-y-3">
+               {vantageManagement.map((vm) => (
+                 <div key={vm.id} className="glass p-5 rounded-2xl border border-white/5 glass-hover transition-all">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-bold text-accent inline-flex items-center gap-2">
-                        <AgentAvatar name={rs.vantageName} size={18} className="shrink-0" />
-                        {rs.vantageName}
-                      </h3>
-                      <span className="text-sm text-foreground font-bold">${rs.totalRevenue.toFixed(2)}</span>
+                      <h4 className="font-bold text-foreground flex items-center gap-2">
+                        {vm.name}
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </h4>
+                      <Link href={`/agents/${vm.id}`} className="text-muted hover:text-primary transition-colors">
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
                     </div>
-                    <div className="mb-4 px-3 py-2 bg-background border border-border text-xs text-muted">
-                      100% Agent Treasury &mdash; revenue funds operations &amp; Pulse buyback
+                    <div className="space-y-3">
+                       <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted">
+                          <span>Threshold</span>
+                          <span className="text-foreground">${vm.approvalThreshold} USDC</span>
+                       </div>
+                       <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-muted">
+                          <span>Service ID</span>
+                          <span className="text-foreground font-mono">{vm.tokenAddress || "GENESIS"}</span>
+                       </div>
+                       <div className="pt-3 border-t border-white/5">
+                          <ApiKeyCell vantageId={vm.id} masked={vm.apiKeyMasked} raw={vm.apiKeyRaw} />
+                       </div>
                     </div>
-                    <div className="flex gap-3 mb-4">
-                      {Object.entries(rs.bySource).map(([source, amount]) => (
-                        <span key={source} className="text-xs text-muted">
-                          {source}: <span className="text-foreground">${amount.toFixed(2)}</span>
-                        </span>
-                      ))}
+                 </div>
+               ))}
+             </div>
+          </section>
+
+          {/* Activity Mini Feed */}
+          <section className="glass rounded-2xl border border-white/5 overflow-hidden">
+             <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+                <h2 className="text-xs font-bold tracking-[0.2em] text-muted uppercase tracking-widest">Protocol Stream</h2>
+             </div>
+             <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar">
+                {activities.map((act) => (
+                  <div key={act.id} className="flex gap-3 relative group">
+                    <div className="flex flex-col items-center">
+                      <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-primary transition-colors mt-1.5" />
+                      <div className="flex-1 w-[1px] bg-white/5 mt-2" />
                     </div>
-                    {rs.recentTx.length > 0 && (
-                      <div className="border-t border-border pt-3 space-y-2">
-                        {rs.recentTx.map((tx, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted">{new Date(tx.date).toLocaleDateString()}</span>
-                              <span className="text-muted">[{tx.source.toUpperCase()}]</span>
-                            </div>
-                            <span className="text-foreground">+${tx.amount.toFixed(2)} {tx.currency}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="pb-2">
+                      <p className="text-[10px] font-mono text-muted-foreground uppercase opacity-60">
+                        {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} &middot; {act.vantageName}
+                      </p>
+                      <p className="text-xs text-foreground/80 leading-relaxed group-hover:text-foreground transition-colors">
+                        {act.action}
+                      </p>
+                    </div>
                   </div>
                 ))}
-              </div>
-            )}
+             </div>
           </section>
-
-          {/* On-chain Status */}
-          <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// ON-CHAIN STATUS</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {vantageManagement.map((c) => (
-                <div key={c.id} className="bg-surface border border-border p-5">
-                  <h3 className="text-sm font-bold text-accent mb-3 flex items-center gap-2">
-                    <AgentAvatar name={c.name} size={18} className="shrink-0" />
-                    {c.name}
-                  </h3>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted">Token ID</span>
-                      <span className="text-foreground font-mono">{c.tokenAddress || "—"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted">Supply</span>
-                      <span className="text-foreground">{c.totalSupply.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted">Pulse Price</span>
-                      <span className="text-accent">${c.pulsePrice.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted">Revenue Model</span>
-                      <span className="text-foreground">Agent Treasury</span>
-                    </div>
-                    {c.tokenAddress && (
-                      <a
-                        href={`https://hashscan.io/testnet/token/${c.tokenAddress}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-center border border-border py-1.5 text-muted hover:text-accent hover:border-accent transition-colors mt-2"
-                      >
-                        View on HashScan &rarr;
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Vantage Management */}
-          <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// VANTAGE MANAGEMENT</h2>
-            <div className="bg-surface border border-border divide-y divide-border">
-              {vantageManagement.map((c) => (
-                <div key={c.id} className="p-5 hover:bg-surface-hover transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <AgentAvatar name={c.name} size={18} className="shrink-0" />
-                        {c.name}
-                      </h3>
-                      <span className={`text-xs ${c.status === "Active" ? "text-green-400" : "text-muted"}`}>
-                        [{c.status.toUpperCase()}]
-                      </span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                    <div>
-                      <span className="text-muted">Approval Threshold</span>
-                      <p className="text-foreground mt-0.5">&gt; ${c.approvalThreshold} USDC</p>
-                    </div>
-                    <div>
-                      <span className="text-muted">GTM Budget</span>
-                      <p className="text-foreground mt-0.5">${c.gtmBudget}/mo</p>
-                    </div>
-                    <div>
-                      <span className="text-muted">Channels</span>
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {c.channels.map((ch) => (
-                          <span key={ch} className="border border-border px-1.5 py-0.5 text-foreground">{ch}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-muted">Token</span>
-                      <p className="text-foreground mt-0.5 font-mono">{c.tokenAddress || "—"}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-border text-xs">
-                    <span className="text-muted">Agent API Key</span>
-                    <div className="mt-1">
-                      <ApiKeyCell vantageId={c.id} masked={c.apiKeyMasked} raw={c.apiKeyRaw} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Activity Feed */}
-          <section className="mb-10">
-            <h2 className="text-sm text-muted mb-4 tracking-wide">// ACTIVITY FEED</h2>
-            <div className="bg-surface border border-border">
-              {activities.length === 0 && (
-                <div className="p-6 text-muted text-sm text-center">No activity yet.</div>
-              )}
-              {activities.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`p-4 flex items-start gap-4 hover:bg-surface-hover transition-colors ${
-                    i < activities.length - 1 ? "border-b border-border" : ""
-                  }`}
-                >
-                  <div className="flex flex-col items-center pt-1.5 shrink-0">
-                    <div className={`w-1.5 h-1.5 rounded-full ${item.status === "completed" ? "bg-green-500" : "bg-yellow-500"}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-xs text-muted font-mono">
-                        {new Date(item.timestamp).toLocaleString()}
-                      </span>
-                      <span className="text-xs text-muted">&middot;</span>
-                      <span className="text-xs text-accent inline-flex items-center gap-1">
-                        <AgentAvatar name={item.vantageName} size={14} className="shrink-0" />
-                        {item.vantageName}
-                      </span>
-                      <StatusBadge status={item.status} />
-                    </div>
-                    <p className="text-sm text-foreground">{item.action}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
