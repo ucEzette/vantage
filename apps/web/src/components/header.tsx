@@ -3,13 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@/components/providers";
+import { 
+  BarChart3, 
+  Bot, 
+  Activity, 
+  LayoutDashboard, 
+  Rocket, 
+  BookOpen, 
+  Trophy,
+  Wallet,
+  LogOut,
+  Layers
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_ITEMS = [
-  { href: "/agents", label: "Agents", requiresWallet: false },
-  { href: "/activity", label: "Activity", requiresWallet: false },
-  { href: "/playbooks", label: "Playbooks", requiresWallet: false },
-  { href: "/leaderboard", label: "Leaderboard", requiresWallet: false },
-  { href: "/docs", label: "Docs", requiresWallet: false, highlight: true },
+  { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/activity", label: "Activity", icon: Activity },
+  { href: "/playbooks", label: "Playbooks", icon: Layers },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/docs", label: "Docs", icon: BookOpen, highlight: true },
 ];
 
 export function Header() {
@@ -21,78 +34,100 @@ export function Header() {
     : null;
 
   return (
-    <header className="border-b border-border px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="text-nav-accent tracking-wider text-lg flex items-baseline">
-            <span className="font-[family-name:var(--font-playfair)] font-bold tracking-widest">VANTAGE</span>
+    <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background/60 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
+        <div className="flex items-center gap-10">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <span className="text-black font-bold text-lg select-none">V</span>
+            </div>
+            <span className="font-[family-name:var(--font-playfair)] font-bold tracking-[0.2em] text-xl text-foreground group-hover:text-primary transition-colors">
+              VANTAGE
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`text-sm transition-colors flex items-center gap-1.5 ${
-                  item.highlight
-                    ? pathname === item.href
-                      ? "text-green-400 font-bold"
-                      : "text-green-400/80 hover:text-green-400 font-medium"
-                    : pathname === item.href
-                      ? "text-nav-accent"
-                      : "text-muted hover:text-nav-foreground"
-                }`}
-              >
-                {item.highlight && <span className="text-green-400/60">&lt;/&gt;</span>}
-                {item.label}
-                {item.requiresWallet && !isConnected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/70" title="Wallet required" />
-                )}
-              </Link>
-            ))}
+
+          <nav className="hidden lg:flex items-center gap-1.5">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative px-4 py-2 text-sm transition-all flex items-center gap-2 rounded-full overflow-hidden group ${
+                    item.highlight
+                      ? isActive
+                        ? "text-primary font-bold"
+                        : "text-primary/80 hover:text-primary"
+                      : isActive
+                        ? "text-foreground font-medium bg-white/5"
+                        : "text-muted hover:text-foreground hover:bg-white/5"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted group-hover:text-foreground"} transition-colors`} />
+                  {item.label}
+                  {isActive && (
+                    <motion.div 
+                      layoutId="nav-active"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/40 truncate"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
-          {isConnected && (
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3 mr-2">
+            {isConnected && (
+              <Link
+                href="/dashboard"
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-all ${
+                  pathname === "/dashboard"
+                    ? "bg-white/10 text-foreground"
+                    : "text-muted hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+            )}
             <Link
-              href="/dashboard"
-              className={`hidden md:inline-flex text-sm transition-colors items-center gap-1.5 ${
-                pathname === "/dashboard"
-                  ? "text-nav-accent"
-                  : "text-muted hover:text-nav-foreground"
-              }`}
+              href="/launch"
+              className="flex items-center gap-2 bg-primary text-black px-4 py-2 text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]"
             >
-              Dashboard
+              <Rocket className="w-4 h-4" />
+              Launch Agent
             </Link>
-          )}
-          <Link
-            href="/launch"
-            className={`hidden md:inline-flex px-4 py-2 text-sm font-medium transition-colors ${
-              pathname === "/launch"
-                ? "bg-accent text-black"
-                : "bg-accent/90 text-black hover:bg-accent"
-            }`}
-          >
-            Launchpad
-          </Link>
+          </div>
+
+          <div className="h-6 w-[1px] bg-white/10 hidden sm:block mx-1" />
+
           {isConnected ? (
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-nav-foreground font-mono bg-surface border border-border px-3 py-1.5">
-                {truncatedAddress}
-              </span>
+            <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/40">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs font-mono text-muted-foreground tracking-tight">
+                  {truncatedAddress}
+                </span>
+              </div>
               <button
                 onClick={disconnect}
-                className="text-xs text-muted hover:text-nav-foreground transition-colors"
+                className="p-2 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all group"
+                title="Disconnect"
               >
-                Disconnect
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <button
               onClick={connect}
-              className="border border-border px-4 py-2 text-sm text-nav-foreground hover:bg-surface-hover transition-colors cursor-pointer"
+              className="group relative flex items-center gap-2 px-5 py-2 text-sm rounded-lg border border-white/10 hover:border-white/20 transition-all bg-white/5 overflow-hidden"
             >
-              Connect Wallet
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Wallet className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
+              <span className="relative z-10 font-bold group-hover:text-foreground transition-colors">Connect Wallet</span>
             </button>
           )}
         </div>
