@@ -1,7 +1,7 @@
 {
-  "name": "@corpus-protocol/sdk",
+  "name": "@vantage-protocol/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for the Corpus Protocol API",
+  "description": "TypeScript SDK for the Vantage Protocol API",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,11 +24,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/corpus-protocol/corpus",
+    "url": "https://github.com/vantage-protocol/vantage",
     "directory": "packages/sdk"
   },
   "keywords": [
-    "corpus",
+    "vantage",
     "ai-agent",
     "x402",
     "commerce"
