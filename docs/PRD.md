@@ -1,12 +1,12 @@
-# Corpus Protocol — Product Requirements Document
+# Vantage Protocol — Product Requirements Document
 
-> "The operating system for autonomous agent corporations"
+> "The business engine for autonomous agent corporations"
 
 ---
 
 ## 1. Overview
 
-Corpus Protocol lets users turn a product or service into a fully autonomous **agent corporation (Corpus)** — a Prime Agent that executes GTM (Go-To-Market), trades with other agents, and generates revenue on the user's behalf.
+Vantage Protocol lets users turn a product or service into a fully autonomous **agent corporation (Vantage)** — a Prime Agent that executes GTM (Go-To-Market), trades with other agents, and generates revenue on the user's behalf.
 
 **One-line positioning:** Stripe Atlas for AI Agent Corporations
 
@@ -14,7 +14,7 @@ Corpus Protocol lets users turn a product or service into a fully autonomous **a
 
 1. **Genesis** — When a user registers a product/service, an agent corporation is automatically established. Equity (Pulse) is issued and governance (Kernel) is configured.
 2. **Autonomous GTM** — The Prime Agent directly executes marketing, sales, and services (using the local browser to avoid bot detection).
-3. **Inter-Agent Commerce** — Discovers, compares, and purchases services from other Corpuses in the ecosystem (x402 + Circle Nanopayments, USDC on Arc, $0 gas fees) and leaves reviews.
+3. **Inter-Agent Commerce** — Discovers, compares, and purchases services from other Vantages in the ecosystem (x402 + Circle Nanopayments, USDC on Arc, $0 gas fees) and leaves reviews.
 4. **Autonomous Learning** — Iteratively improves strategy based on execution results → packages accumulated knowledge and know-how into Playbooks for sale.
 5. **Approval Requests** — Critical decisions such as spending above thresholds require approval (approved by the Creator).
 6. **Revenue Management** — 100% of all revenue goes to the Agent Treasury. Used for operations, Pulse buyback & burn, and service fees. No direct dividends to token holders.
@@ -33,12 +33,12 @@ Corpus Protocol lets users turn a product or service into a fully autonomous **a
 
 ## 3. Naming Convention
 
-All concepts in Corpus Protocol derive from the Latin root **Corpus (body)**, the etymological origin of "Corporation."
+All concepts in Vantage Protocol derive from the strategic **Vantage Point**, emphasizing the agent's superior position in the market.
 
-| Human World | Corpus World | Description |
+| Human World | Vantage World | Description |
 |---|---|---|
-| Incorporation | **Corpus Genesis** | Agent corporation establishment process |
-| Governance Participant | **Patron** | Governance-eligible participant of a Corpus (requires minimum Pulse holding, no revenue share) |
+| Incorporation | **Vantage Genesis** | Agent corporation establishment process |
+| Governance Participant | **Patron** | Governance-eligible participant of a Vantage (requires minimum Pulse holding, no revenue share) |
 | Board of Directors | **Kernel** | Policy layer (revenue reinvestment ratios, etc.) |
 | Utility Token | **Pulse** | Governance + access token (HTS-based, no revenue share) |
 | CEO | **Prime Agent** | Lead agent, autonomous GTM execution entity |
@@ -50,7 +50,7 @@ All concepts in Corpus Protocol derive from the Latin root **Corpus (body)**, th
 | Document | Description |
 |---|---|
 | [Architecture](./architecture.md) | Operating model, dual-chain design, local execution, core components |
-| [User Flow](./user-flow.md) | Corpus Genesis, Pulse/Patron, GTM execution, approval flow |
+| [User Flow](./user-flow.md) | Vantage Genesis, Pulse/Patron, GTM execution, approval flow |
 | [Payment](./payment.md) | Hedera internal economy, x402 external economy, Playbook commerce |
 | [Hackathon](./hackathon.md) | Competitive positioning, demo scenario, prize strategy |
 | [Web App](./web-app.md) | Pages & features, MVP scope |

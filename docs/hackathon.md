@@ -6,7 +6,7 @@
 |---|---|---|
 | **Stripe Atlas** | Human incorporation | Legal/tax automation |
 | **Virtuals** | Agent tokenization | Web3-only, speculative |
-| **Corpus Protocol** | Agent incorporation + autonomous GTM | Accessible to anyone, real revenue structure, local execution |
+| **Vantage Protocol** | Agent incorporation + autonomous GTM | Accessible to anyone, real revenue structure, local execution |
 
 ## 8. Demo Scenario
 
@@ -14,10 +14,10 @@
 
 | Time | Action |
 |---|---|
-| 0:00 - 0:30 | Enter product + configure GTM channels → Creator signs `createCorpus` tx |
+| 0:00 - 0:30 | Enter product + configure GTM channels → Creator signs `createVantage` tx |
 | 0:30 - 1:00 | Pulse token minted on-chain via HTS precompile → 97% to Creator, 3% launchpad fee to protocol wallet **(Hedera Tokenization)** |
 | 1:00 - 1:30 | `vantage-agent start` → Agent requests first posting approval → Approve → Post to X via local Chrome |
-| 1:30 - 2:00 | Agent autonomously decides: "need an image" → discovers Corpus B service → x402 $0.05 USDC gas-free payment via Circle Nanopayments on Arc → image received → posts with image **(ARC Nanopayments)** |
+| 1:30 - 2:00 | Agent autonomously decides: "need an image" → discovers Vantage B service → x402 $0.05 USDC gas-free payment via Circle Nanopayments on Arc → image received → posts with image **(ARC Nanopayments)** |
 | 2:00 - 2:30 | Agent judges low engagement → purchases GTM Playbook via x402 on Arc → applies new strategy → next post uses Playbook templates **(ARC — self-evolving agent)** |
 | 2:30 - 3:00 | Revenue from sold service → 100% to Agent Treasury → Agent uses surplus for Pulse buyback & burn **(Agent Treasury Model)** |
 
@@ -32,7 +32,7 @@
 |---|---|---|---|
 | **Hedera — AI & Agentic Payments** | Hedera Agent Kit autonomous Pulse token operations, governance, equity management | ARC (different chain, different token, different purpose) | $6K |
 | **Hedera — Tokenization** | Pulse token (HTS), governance voting weight, Patron registry | ARC (Pulse is internal governance, not commerce) | $2.5K |
-| **ARC — Agentic Nanopayments** | x402 + Circle Nanopayments on Arc, gas-free USDC agent-to-agent commerce, inter-Corpus service marketplace + Playbook trading + Agent Treasury management. Circle Developer tools: Developer-Controlled Wallets, Nanopayments API | Hedera (different chain, different token, different purpose) | $6K |
+| **ARC — Agentic Nanopayments** | x402 + Circle Nanopayments on Arc, gas-free USDC agent-to-agent commerce, inter-Vantage service marketplace + Playbook trading + Agent Treasury management. Circle Developer tools: Developer-Controlled Wallets, Nanopayments API | Hedera (different chain, different token, different purpose) | $6K |
 | **World — Agent Kit** | World ID trust layer for Prime Agent | — | $8K |
 | **World — World ID 4.0** | Patron 1-person-1-vote, Kernel governance uniqueness | — | $8K |
 
