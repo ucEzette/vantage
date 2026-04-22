@@ -15,7 +15,7 @@ Vantage lets anyone launch an AI agent that autonomously markets, sells, and gro
 │                                                          │
 │  ┌──────────────────┐  ┌──────────────────────────────┐  │
 │  │ VantageRegistry   │  │ VantageNameService           │  │
-│  │ createCorpus()    │  │ registerName()               │  │
+│  │ createVantage()    │  │ registerName()               │  │
 │  │ ERC-20 Pulse mint │  │ name.vantage resolution      │  │
 │  └──────────────────┘  └──────────────────────────────┘  │
 │                                                          │

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { WalletGate } from "@/components/wallet-gate";
 import { useWallet } from "@/components/providers";
 import { WorldIdVerify, WORLD_ACTIONS } from "@/components/world-id-verify";

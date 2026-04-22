@@ -4,7 +4,7 @@
 
 ### API Rate Limiting
 - **What:** Add IP-based rate limiting to all 35 API routes
-- **Why:** Zero rate limiting today. Unauthenticated endpoints (/api/corpus, /api/services, /api/activity) are vulnerable to enumeration, brute force, and DoS
+- **Why:** Zero rate limiting today. Unauthenticated endpoints (/api/vantage, /api/services, /api/activity) are vulnerable to enumeration, brute force, and DoS
 - **Effort:** M (human) → S (CC+gstack) | **Priority:** P1
 - **Depends on:** Auth middleware (shipping in current review)
 
@@ -27,7 +27,7 @@
 - **Depends on:** —
 
 ### Circle Wallet Cleanup on Partial Failure
-- **What:** Add cleanup/rollback when corpus creation fails after Circle wallet is created
+- **What:** Add cleanup/rollback when vantage creation fails after Circle wallet is created
 - **Why:** If DB insert fails after wallet creation (e.g., unique constraint on agentName), the Circle wallet is orphaned. No cleanup.
 - **Effort:** S (human) → S (CC+gstack) | **Priority:** P3
 - **Depends on:** —
