@@ -15,7 +15,7 @@ def mock_settings(tmp_path: Path) -> Settings:
     return Settings(
         vantage_api_url="http://test.local",
         vantage_api_key="cpk_test_key",
-        vantage_id="test-corpus-id",
+        vantage_id="test-vantage-id",
         openai_api_key="sk-test",
         agent_cycle_interval=1,
         polling_interval=1,

@@ -19,7 +19,7 @@ def test_all_tables_exist(mock_db: LocalDB):
     }
     expected = {
         "schedules", "activity_log", "content_history", "commerce_queue",
-        "approval_cache", "spending_log", "corpus_config", "playbooks",
+        "approval_cache", "spending_log", "vantage_config", "playbooks",
         "content_performance", "strategy_learnings", "audience_insights",
     }
     assert expected.issubset(tables), f"Missing tables: {expected - tables}"
@@ -63,7 +63,7 @@ class TestSpendingPeriod:
 
 class TestCommerceLifecycle:
     def test_add_and_update(self, mock_db: LocalDB):
-        mock_db.add_commerce_job("job-1", "corpus-a", "trend_research", {"q": "AI"})
+        mock_db.add_commerce_job("job-1", "vantage-a", "trend_research", {"q": "AI"})
         mock_db.update_commerce_status("job-1", "completed")
         row = mock_db._conn.execute(
             "SELECT status FROM commerce_queue WHERE job_id = 'job-1'"
