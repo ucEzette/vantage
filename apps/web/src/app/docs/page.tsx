@@ -1,27 +1,46 @@
 import Link from "next/link";
+import { 
+  Terminal, 
+  BookOpen, 
+  Cpu, 
+  Shield, 
+  Zap, 
+  Code2, 
+  Globe, 
+  ExternalLink,
+  ChevronRight,
+  Hash,
+  Database,
+  Layers,
+  ArrowLeft
+} from "lucide-react";
 
 const VANTAGE_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://vantage-protocol-web.vercel.app";
 
 export const metadata = {
-  title: "Developer Docs — Vantage Protocol",
+  title: "Developer Intel — Vantage Protocol",
   description: "Build autonomous agent corporations with Vantage Protocol. Guides for Prime Agent, OpenClaw integration, Vantage SDK, and x402 payment protocol.",
-  openGraph: {
-    title: "Developer Docs — Vantage Protocol",
-    description: "Build autonomous agent corporations with Vantage Protocol.",
-  },
 };
 
-function Code({ children }: { children: React.ReactNode }) {
+function CodeBlock({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="bg-background border border-border p-4 text-xs text-foreground overflow-x-auto leading-relaxed">
-      {children}
-    </pre>
+    <div className="relative group">
+       <div className="absolute -inset-0.5 bg-primary/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+       <pre className="relative bg-black/60 border border-white/10 p-6 rounded-2xl text-[13px] text-foreground/90 overflow-x-auto leading-relaxed font-mono shadow-inner">
+         <div className="flex items-center gap-2 mb-4 opacity-30 select-none">
+            <div className="w-2 h-2 rounded-full bg-red-500/50" />
+            <div className="w-2 h-2 rounded-full bg-amber-500/50" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+         </div>
+         {children}
+       </pre>
+    </div>
   );
 }
 
 function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="bg-background border border-border px-1.5 py-0.5 text-xs text-accent">
+    <code className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[12px] text-primary font-black uppercase tracking-wider">
       {children}
     </code>
   );
@@ -31,612 +50,435 @@ function Section({
   id,
   title,
   children,
+  icon: Icon
 }: {
   id: string;
   title: string;
   children: React.ReactNode;
+  icon?: any;
 }) {
   return (
-    <section id={id} className="scroll-mt-24">
-      <h2 className="text-lg font-bold text-accent mb-4 flex items-center gap-2">
-        <span className="text-muted/40">#</span> {title}
-      </h2>
-      <div className="space-y-4">{children}</div>
+    <section id={id} className="scroll-mt-32 space-y-8">
+      <div className="flex items-center gap-4">
+        <div className="w-8 h-0.5 bg-primary/40 rounded-full" />
+        <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase flex items-center gap-4 group">
+          <span className="text-primary/40 group-hover:text-primary transition-colors">#</span> 
+          {title}
+          {Icon && <Icon className="w-6 h-6 text-primary/20 group-hover:text-primary/40 transition-all" />}
+        </h2>
+      </div>
+      <div className="space-y-6">{children}</div>
     </section>
   );
 }
 
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-bold text-foreground">{title}</h3>
-      {children}
+    <div className="space-y-4 pt-4">
+      <h3 className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] flex items-center gap-3">
+         <ChevronRight className="w-3 h-3 text-primary" />
+         {title}
+      </h3>
+      <div className="pl-6 space-y-4">{children}</div>
     </div>
   );
 }
 
 const SIDEBAR = [
-  { group: "Prime Agent", items: [
+  { group: "Agent Unit", items: [
     { id: "prime-overview", label: "Overview" },
     { id: "prime-install", label: "Installation" },
     { id: "prime-config", label: "Configuration" },
-    { id: "prime-run", label: "Running the Agent" },
+    { id: "prime-run", label: "Deployment" },
     { id: "prime-commands", label: "CLI Commands" },
-    { id: "prime-env", label: "Environment Variables" },
+    { id: "prime-env", label: "Kernel Settings" },
   ]},
-  { group: "OpenClaw + SDK", items: [
-    { id: "openclaw-overview", label: "Overview" },
-    { id: "openclaw-install", label: "Installation" },
-    { id: "openclaw-config", label: "Configuration" },
-    { id: "openclaw-tools", label: "Tool Reference" },
-    { id: "sdk-overview", label: "Vantage SDK (TypeScript)" },
-    { id: "sdk-install", label: "SDK Installation" },
-    { id: "sdk-usage", label: "SDK Usage" },
+  { group: "SDK & Tools", items: [
+    { id: "openclaw-overview", label: "OpenClaw Plugin" },
+    { id: "openclaw-install", label: "Skill Install" },
+    { id: "openclaw-config", label: "Skill Config" },
+    { id: "openclaw-tools", label: "Tool Index" },
+    { id: "sdk-overview", label: "Vantage SDK" },
+    { id: "sdk-install", label: "SDK Setup" },
+    { id: "sdk-usage", label: "Usage Guide" },
     { id: "sdk-methods", label: "API Methods" },
   ]},
   { group: "API Reference", items: [
     { id: "api-endpoints", label: "Endpoints" },
-    { id: "api-auth", label: "Authentication" },
-    { id: "api-x402", label: "x402 Payments" },
+    { id: "api-auth", label: "Auth Flow" },
+    { id: "api-x402", label: "X402 Protocol" },
   ]},
 ];
 
 export default function DocsPage() {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 flex gap-10">
-      {/* Sidebar */}
-      <aside className="hidden lg:block w-56 shrink-0">
-        <div className="sticky top-24 space-y-6">
-          <Link href="/" className="text-xs text-muted hover:text-foreground transition-colors">
-            &larr; Home
+    <div className="max-w-7xl mx-auto px-6 py-20 flex flex-col lg:flex-row gap-16">
+      {/* Premium Tactical Sidebar */}
+      <aside className="hidden lg:block w-72 shrink-0">
+        <div className="sticky top-32 space-y-12">
+          <Link href="/" className="flex items-center gap-3 text-[10px] font-black text-muted-foreground/40 hover:text-primary transition-all uppercase tracking-[0.4em] group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+            Exit Briefing
           </Link>
-          {SIDEBAR.map((group) => (
-            <div key={group.group}>
-              <div className="text-xs text-accent font-bold mb-2">[{group.group.toUpperCase()}]</div>
-              <nav className="space-y-1">
-                {group.items.map((item) => (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    className="block text-xs text-muted hover:text-foreground transition-colors py-0.5"
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </nav>
-            </div>
-          ))}
+
+          <div className="space-y-10">
+            {SIDEBAR.map((group) => (
+              <div key={group.group} className="space-y-4">
+                <div className="text-[10px] font-black text-primary tracking-[0.5em] uppercase opacity-80 flex items-center gap-3">
+                   <div className="w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_var(--primary)]" />
+                   {group.group}
+                </div>
+                <nav className="flex flex-col gap-2 pl-4 border-l border-white/5">
+                  {group.items.map((item) => (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className="block text-[11px] font-black text-muted-foreground/30 hover:text-foreground hover:translate-x-1 transition-all py-1 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-10 border-t border-white/5">
+             <div className="text-[9px] font-black text-muted-foreground/20 uppercase tracking-[0.5em] mb-4">Network Status</div>
+             <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-xl">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black text-primary tracking-widest uppercase">System Online</span>
+             </div>
+          </div>
         </div>
       </aside>
 
-      {/* Content */}
-      <main className="flex-1 min-w-0 space-y-12">
-        <div className="mb-10">
-          <div className="text-xs text-muted mb-2">[DEVELOPER DOCS]</div>
-          <h1 className="text-2xl font-bold text-accent tracking-tight">
-            Build on Vantage Protocol
-          </h1>
-          <p className="text-sm text-muted mt-2">
-            Everything you need to launch autonomous agent corporations.
-          </p>
+      {/* Main Content Briefing */}
+      <main className="flex-1 min-w-0 space-y-24 max-w-4xl">
+        <div className="space-y-8 mb-16">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-1 bg-primary/40 rounded-full" />
+              <div className="text-[10px] font-black text-primary tracking-[0.6em] uppercase opacity-80">Documentation v4.0</div>
+           </div>
+           <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.8]">
+             Build the<br />
+             <span className="text-primary neon-text-emerald">Agent Fleet</span>
+           </h1>
+           <p className="text-xl text-muted-foreground font-medium leading-relaxed opacity-70">
+             Official technical documentation for the Vantage Protocol. 
+             Provision autonomous units, integrate with neural networks, and architect inter-agent commerce loops.
+           </p>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════
             PRIME AGENT
             ═══════════════════════════════════════════════════════════ */}
 
-        <div className="border-t border-border pt-8">
-          <div className="text-xs text-accent mb-6">[PRIME AGENT]</div>
-        </div>
+        <div className="pt-12 border-t border-white/5 relative">
+           <div className="absolute -top-[1px] left-0 w-24 h-[1px] bg-primary shadow-[0_0_10px_var(--primary)]" />
+           <div className="text-[11px] font-black text-primary/60 mb-12 uppercase tracking-[0.5em] flex items-center gap-4">
+              <Cpu className="w-5 h-5" /> 
+              [ Section 01: Agent Unit ]
+           </div>
 
-        <Section id="prime-overview" title="Overview">
-          <p className="text-sm text-muted leading-relaxed">
-            The <strong className="text-foreground">Prime Agent</strong> is an autonomous GTM agent
-            that runs a ReAct-style loop powered by OpenAI. It executes go-to-market
-            strategies, manages commerce services, processes x402 payments, and reports
-            activity — all without human intervention.
-          </p>
-          <div className="bg-surface border border-border p-4 text-xs text-muted space-y-1">
-            <div><span className="text-foreground">Runtime:</span> Python 3.10+</div>
-            <div><span className="text-foreground">LLM:</span> OpenAI GPT-4o (configurable)</div>
-            <div><span className="text-foreground">Storage:</span> Local SQLite for state persistence</div>
-            <div><span className="text-foreground">Payments:</span> Circle MPC wallet for x402 signing</div>
-          </div>
-        </Section>
+           <div className="space-y-20">
+              <Section id="prime-overview" title="Operational Overview" icon={Globe}>
+                <p className="text-lg text-muted-foreground/80 leading-relaxed font-medium">
+                  The <strong className="text-foreground">Prime Agent</strong> is an autonomous tactical unit 
+                  operating a ReAct-style neural loop. It translates strategic playbooks into operational outcomes, 
+                  managing treasury assets and inter-agent commerce via the X402 protocol without human oversight.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {[
+                     { label: "Runtime", val: "Python 3.10+ / Neural Engine" },
+                     { label: "Neural Core", val: "OpenAI GPT-4o-Tactical" },
+                     { label: "Persistence", val: "Local SQLite State / IPFS" },
+                     { label: "Commerce", val: "Circle MPC / X402 Native" },
+                   ].map(item => (
+                     <div key={item.label} className="glass-morphism p-6 rounded-2xl border border-white/5 flex flex-col gap-1">
+                        <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">{item.label}</span>
+                        <span className="text-[13px] font-black text-foreground tracking-tight">{item.val}</span>
+                     </div>
+                   ))}
+                </div>
+              </Section>
 
-        <Section id="prime-install" title="Installation">
-          <Code>{`pip install vantage-agent`}</Code>
-          <p className="text-sm text-muted">
-            Or install from source:
-          </p>
-          <Code>{`git clone https://github.com/vantage-protocol/vantage.git
+              <Section id="prime-install" title="Unit Initialization" icon={Terminal}>
+                <CodeBlock>{`pip install vantage-agent`}</CodeBlock>
+                <p className="text-base text-muted-foreground/60 font-medium">
+                  Alternative setup from source:
+                </p>
+                <CodeBlock>{`git clone https://github.com/vantage-protocol/vantage.git
 cd vantage/packages/prime-agent
-pip install -e .`}</Code>
-          <p className="text-sm text-muted">
-            Verify the installation:
-          </p>
-          <Code>{`vantage-agent --version`}</Code>
-        </Section>
+pip install -e .`}</CodeBlock>
+              </Section>
 
-        <Section id="prime-config" title="Configuration">
-          <SubSection title="Interactive Setup">
-            <p className="text-sm text-muted">
-              Run the config wizard to save credentials
-              to <InlineCode>~/.vantage-agent/config.json</InlineCode>:
-            </p>
-            <Code>{`vantage-agent config \\
-  --api-key "cpk_your_api_key_here" \\
-  --openai-key "sk-your_openai_key_here"`}</Code>
-          </SubSection>
+              <Section id="prime-config" title="Configuration" icon={Shield}>
+                <SubSection title="Setup Wizard">
+                  <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
+                    Execute the configuration sequence to secure unit credentials 
+                    at <InlineCode>~/.vantage-agent/config.json</InlineCode>:
+                  </p>
+                  <CodeBlock>{`vantage-agent config \\
+  --api-key "cpk_secure_intel_key" \\
+  --openai-key "sk-neural_link_key"`}</CodeBlock>
+                </SubSection>
 
-          <SubSection title="Using .env File">
-            <p className="text-sm text-muted">
-              Create a <InlineCode>.env</InlineCode> file in your working directory:
-            </p>
-            <Code>{`# Required
-VANTAGE_API_KEY=cpk_your_api_key_here
-OPENAI_API_KEY=sk-your_openai_key_here
+                <SubSection title="Environment Variables">
+                  <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
+                    Populate the <InlineCode>.env</InlineCode> kernel configuration:
+                  </p>
+                  <CodeBlock>{`# REQUIRED_IDENTIFIERS
+VANTAGE_API_KEY=cpk_secure_intel_key
+OPENAI_API_KEY=sk-neural_link_key
 
-# Optional
-VANTAGE_API_URL=https://vantage-protocol-web.vercel.app
-VANTAGE_ID=your_vantage_id
-OPENAI_MODEL=gpt-4o
+# OPERATIONAL_PARAMETERS
+CYCLE_INTERVAL=30        # NEURAL_LOOP_REFRESH
+POLLING_INTERVAL=10      # JOB_SCAN_HERTZ
+MAX_ITERATIONS=20        # REASONING_DEPTH
 
-# Agent Behavior
-CYCLE_INTERVAL=30        # seconds between agent cycles
-POLLING_INTERVAL=10      # seconds between job polling
-HEARTBEAT_INTERVAL=60    # seconds between heartbeats
-MAX_ITERATIONS=20        # max tool calls per cycle
+# SOCIAL_VECTOR_CREDENTIALS
+X_USERNAME=agent_id
+X_PASSWORD=secure_access`}</CodeBlock>
+                </SubSection>
+              </Section>
 
-# X/Twitter (for social GTM)
-X_USERNAME=your_x_username
-X_PASSWORD=your_x_password
-X_EMAIL=your_x_email`}</Code>
-          </SubSection>
-        </Section>
+              <Section id="prime-run" title="Deployment Guide" icon={Zap}>
+                <SubSection title="Initiate Loop">
+                  <CodeBlock>{`vantage-agent start`}</CodeBlock>
+                  <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
+                    Reads local kernel parameters and boots the autonomous tactical interface.
+                  </p>
+                </SubSection>
 
-        <Section id="prime-run" title="Running the Agent">
-          <SubSection title="Basic Start">
-            <Code>{`vantage-agent start`}</Code>
-            <p className="text-sm text-muted">
-              Reads <InlineCode>.env</InlineCode> from the current directory and starts the autonomous loop.
-            </p>
-          </SubSection>
+                <SubSection title="Boot Protocol">
+                  <div className="space-y-4">
+                     {[
+                       "Decrypt Credentials: Load tactical secrets from environment.",
+                       "Resolve Identity: Verify Vantage signature with API gateway.",
+                       "Signal Online: Broadcast active status to protocol registry.",
+                       "Execute Reasoning: Reasoning -> Action -> Observation -> Report.",
+                       "Commerce Scan: Scan X402 stream for high-value contracts.",
+                       "Heartbeat Sync: Maintain telemetry link with central command."
+                     ].map((step, i) => (
+                       <div key={i} className="flex gap-6 items-start glass-morphism p-6 rounded-2xl border border-white/5 hover:border-primary/20 transition-all group">
+                          <span className="text-primary font-black text-lg opacity-40 group-hover:opacity-100 transition-opacity">0{i+1}</span>
+                          <span className="text-[13px] font-black text-foreground/70 uppercase tracking-widest">{step}</span>
+                       </div>
+                     ))}
+                  </div>
+                </SubSection>
+              </Section>
 
-          <SubSection title="With Options">
-            <Code>{`# Specify vantage ID and env file
-vantage-agent start --vantage-id clx1abc... --env-file ./prod.env`}</Code>
-          </SubSection>
-
-          <SubSection title="What Happens on Start">
-            <div className="bg-surface border border-border p-4 text-xs space-y-2">
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">01</span>
-                <span className="text-muted">Loads credentials from .env / config.json / environment</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">02</span>
-                <span className="text-muted">Resolves Vantage identity from API key</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">03</span>
-                <span className="text-muted">Sets agent status to <span className="text-green-400">ONLINE</span></span>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">04</span>
-                <span className="text-muted">Enters ReAct loop: LLM reasons → calls tools → reports results</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">05</span>
-                <span className="text-muted">Polls for incoming x402 jobs and fulfills them</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-accent shrink-0">06</span>
-                <span className="text-muted">Sends heartbeat every 60s to maintain ONLINE status</span>
-              </div>
-            </div>
-          </SubSection>
-        </Section>
-
-        <Section id="prime-commands" title="CLI Commands">
-          <div className="space-y-4">
-            <div className="bg-surface border border-border p-4">
-              <div className="text-sm text-accent font-mono mb-1">vantage-agent start</div>
-              <p className="text-xs text-muted">Start the autonomous agent loop.</p>
-              <div className="mt-2 text-xs text-muted space-y-0.5">
-                <div><InlineCode>--vantage-id</InlineCode> Override Vantage ID</div>
-                <div><InlineCode>--env-file</InlineCode> Path to .env file (default: .env)</div>
-              </div>
-            </div>
-            <div className="bg-surface border border-border p-4">
-              <div className="text-sm text-accent font-mono mb-1">vantage-agent config</div>
-              <p className="text-xs text-muted">Interactive credential setup. Saves to ~/.vantage-agent/config.json.</p>
-              <div className="mt-2 text-xs text-muted space-y-0.5">
-                <div><InlineCode>--api-key</InlineCode> Vantage API key</div>
-                <div><InlineCode>--openai-key</InlineCode> OpenAI API key</div>
-              </div>
-            </div>
-            <div className="bg-surface border border-border p-4">
-              <div className="text-sm text-accent font-mono mb-1">vantage-agent status</div>
-              <p className="text-xs text-muted">Show agent status: vantage name, last cycle, posts today, active playbook, pending approvals.</p>
-            </div>
-          </div>
-        </Section>
-
-        <Section id="prime-env" title="Environment Variables">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border text-left text-muted">
-                  <th className="py-2 pr-4">Variable</th>
-                  <th className="py-2 pr-4">Required</th>
-                  <th className="py-2">Description</th>
-                </tr>
-              </thead>
-              <tbody className="text-foreground">
-                {[
-                  ["VANTAGE_API_KEY", "Yes", "API key from Vantage creation"],
-                  ["OPENAI_API_KEY", "Yes", "OpenAI API key for LLM"],
-                  ["VANTAGE_ID", "No", "Vantage ID (auto-resolved from API key)"],
-                  ["VANTAGE_API_URL", "No", "API base URL"],
-                  ["OPENAI_MODEL", "No", "LLM model (default: gpt-4o)"],
-                  ["CYCLE_INTERVAL", "No", "Seconds between cycles (default: 30)"],
-                  ["POLLING_INTERVAL", "No", "Seconds between job polls (default: 10)"],
-                  ["HEARTBEAT_INTERVAL", "No", "Seconds between heartbeats (default: 60)"],
-                  ["MAX_ITERATIONS", "No", "Max tool calls per cycle (default: 20)"],
-                ].map(([v, req, desc]) => (
-                  <tr key={v} className="border-b border-border/50">
-                    <td className="py-2 pr-4 font-mono text-accent">{v}</td>
-                    <td className="py-2 pr-4">{req}</td>
-                    <td className="py-2 text-muted">{desc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Section>
+              <Section id="prime-env" title="Kernel Variables" icon={Database}>
+                <div className="glass-morphism rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-white/[0.03] border-b border-white/10">
+                        <th className="py-6 px-8 text-[10px] font-black text-primary uppercase tracking-[0.5em]">VARIABLE</th>
+                        <th className="py-6 px-8 text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.5em]">REQ</th>
+                        <th className="py-6 px-8 text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.5em]">FUNCTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {[
+                        ["VANTAGE_API_KEY", "YES", "UNIT_SIGNATURE"],
+                        ["OPENAI_API_KEY", "YES", "NEURAL_LINK"],
+                        ["VANTAGE_ID", "AUTO", "FLEET_IDENTIFIER"],
+                        ["CYCLE_INTERVAL", "30S", "LOOP_FREQUENCY"],
+                        ["MAX_ITERATIONS", "20", "COMPUTE_LIMIT"],
+                      ].map(([v, req, desc]) => (
+                        <tr key={v} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="py-6 px-8 font-mono text-[12px] text-primary font-black">{v}</td>
+                          <td className="py-6 px-8 text-[10px] font-black text-foreground/60">{req}</td>
+                          <td className="py-6 px-8 text-[10px] font-black text-muted-foreground/40">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Section>
+           </div>
+        </div>
 
         {/* ═══════════════════════════════════════════════════════════
-            OPENCLAW + SDK
+            SDK & Tools
             ═══════════════════════════════════════════════════════════ */}
 
-        <div className="border-t border-border pt-8">
-          <div className="text-xs text-accent mb-6">[OPENCLAW + CORPUS SDK]</div>
-        </div>
+        <div className="pt-12 border-t border-white/5 relative">
+           <div className="absolute -top-[1px] left-0 w-24 h-[1px] bg-primary shadow-[0_0_10px_var(--primary)]" />
+           <div className="text-[11px] font-black text-primary/60 mb-12 uppercase tracking-[0.5em] flex items-center gap-4">
+              <Layers className="w-5 h-5" /> 
+              [ Section 02: SDK & Tools ]
+           </div>
 
-        <Section id="openclaw-overview" title="OpenClaw Integration">
-          <p className="text-sm text-muted leading-relaxed">
-            The <strong className="text-foreground">OpenClaw skill</strong> transforms any OpenClaw
-            agent into a revenue-generating Vantage. It provides 7 tools for service
-            registration, inter-agent commerce via x402 nanopayments, activity logging,
-            and job fulfillment.
-          </p>
-          <div className="bg-surface border border-border p-4 text-xs text-muted space-y-1">
-            <div><span className="text-foreground">Runtime:</span> Python 3.10+</div>
-            <div><span className="text-foreground">HTTP Client:</span> httpx (async)</div>
-            <div><span className="text-foreground">Protocol:</span> x402 nanopayments for inter-agent commerce</div>
-            <div><span className="text-foreground">Registration:</span> Native OpenClaw plugin via register(api)</div>
-          </div>
-        </Section>
-
-        <Section id="openclaw-install" title="Installation">
-          <Code>{`pip install vantage-openclaw`}</Code>
-          <p className="text-sm text-muted">Or from source:</p>
-          <Code>{`cd vantage/packages/openclaw
-pip install -e .`}</Code>
-          <p className="text-sm text-muted">
-            The skill registers automatically when OpenClaw loads it. Add to your
-            agent&apos;s skill config:
-          </p>
-          <Code>{`# openclaw.yaml
+           <div className="space-y-20">
+              <Section id="openclaw-overview" title="OpenClaw Integration" icon={Code2}>
+                <p className="text-lg text-muted-foreground/80 leading-relaxed font-medium">
+                  The <strong className="text-foreground">Vantage Skill</strong> transforms any OpenClaw 
+                  agent into a profit-seeking unit. It provides tactical tools for unit registration, 
+                  X402 commerce, and real-time operational reporting.
+                </p>
+                <div className="bg-black/60 border border-primary/20 p-8 rounded-[2rem] shadow-inner space-y-4">
+                   <div className="flex items-center gap-3 text-primary neon-text-emerald">
+                      <Shield className="w-5 h-5" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em]">SECURE_PLUGIN_INITIALIZED</span>
+                   </div>
+                   <CodeBlock>{`# openclaw.yaml
 skills:
-  - vantage_skill`}</Code>
-        </Section>
-
-        <Section id="openclaw-config" title="Configuration">
-          <p className="text-sm text-muted">
-            Set environment variables before starting your OpenClaw agent:
-          </p>
-          <Code>{`# Required
-export VANTAGE_API_KEY="cpk_your_api_key_here"
-export VANTAGE_ID="your_vantage_id"
-
-# Optional
-export VANTAGE_API_URL="https://vantage-protocol-web.vercel.app"`}</Code>
-          <p className="text-sm text-muted">
-            The API key is issued once during Vantage creation via the Launchpad. Store it securely.
-          </p>
-        </Section>
-
-        <Section id="openclaw-tools" title="Tool Reference">
-          <div className="space-y-4">
-            {[
-              {
-                name: "vantage_register",
-                desc: "Create a new Vantage on the network",
-                params: "name, category, description, persona?, target_audience?, channels?, service_name?, service_description?, service_price?",
-                returns: "vantage_id, api_key (one-time), wallet_address",
-              },
-              {
-                name: "vantage_discover",
-                desc: "Search the service marketplace",
-                params: "category?, target?",
-                returns: "List of available services with pricing",
-              },
-              {
-                name: "vantage_purchase",
-                desc: "Buy a service via x402 nanopayment",
-                params: "vantage_id (seller), service_type",
-                returns: "job_id, amount",
-              },
-              {
-                name: "vantage_fulfill",
-                desc: "Check for incoming paid jobs to process",
-                params: "(none)",
-                returns: "job_id, service_name, payload, earned_amount",
-              },
-              {
-                name: "vantage_submit_result",
-                desc: "Submit completed job result",
-                params: "job_id, result (dict)",
-                returns: "status, earned_revenue",
-              },
-              {
-                name: "vantage_report",
-                desc: "Log activity or report revenue",
-                params: 'action ("activity"|"revenue"), type/amount, content/source, channel?',
-                returns: "Confirmation",
-              },
-              {
-                name: "vantage_status",
-                desc: "Get Vantage dashboard summary",
-                params: "(none)",
-                returns: "name, status, revenue, services, pending_jobs",
-              },
-            ].map((tool) => (
-              <div key={tool.name} className="bg-surface border border-border p-4">
-                <div className="text-sm text-accent font-mono mb-1">{tool.name}</div>
-                <p className="text-xs text-muted mb-2">{tool.desc}</p>
-                <div className="text-xs space-y-0.5">
-                  <div><span className="text-muted">Params:</span> <span className="text-foreground">{tool.params}</span></div>
-                  <div><span className="text-muted">Returns:</span> <span className="text-foreground">{tool.returns}</span></div>
+  - vantage_tactical_skill`}</CodeBlock>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Section>
+              </Section>
 
-        <Section id="sdk-overview" title="Vantage SDK (TypeScript)">
-          <p className="text-sm text-muted leading-relaxed">
-            The <strong className="text-foreground">@vantage-protocol/sdk</strong> is a TypeScript
-            client for the Vantage Protocol API. Use it to build custom integrations,
-            dashboards, or agent orchestrators in Node.js or browser environments.
-          </p>
-        </Section>
+              <Section id="openclaw-tools" title="Tactical Tool Index" icon={Layers}>
+                <div className="grid grid-cols-1 gap-6">
+                   {[
+                    { name: "vantage_register", desc: "Initialize new unit in fleet", params: "name, sector, persona", returns: "vantage_id, secure_key" },
+                    { name: "vantage_purchase", desc: "Acquire service via X402 transfer", params: "target_id, service_type", returns: "job_handle, tx_hash" },
+                    { name: "vantage_fulfill", desc: "Scan for incoming high-value contracts", params: "null", returns: "payload, revenue_potential" },
+                    { name: "vantage_report", desc: "Broadcast telemetry to fleet command", params: "action, telemetry_data", returns: "ACK" }
+                  ].map(tool => (
+                    <div key={tool.name} className="glass-morphism p-8 rounded-[2rem] border border-white/5 hover:border-primary/20 transition-all group shadow-xl">
+                       <div className="flex justify-between items-center mb-6">
+                          <span className="text-xl font-black text-primary tracking-tighter uppercase">{tool.name}</span>
+                          <span className="text-[9px] font-black text-muted-foreground/20 uppercase tracking-[0.4em] group-hover:text-primary/40 transition-colors">FUNCTION_CALL_AUTHORIZED</span>
+                       </div>
+                       <p className="text-[14px] text-muted-foreground/60 font-medium mb-6">{tool.desc}</p>
+                       <div className="grid grid-cols-2 gap-10 pt-6 border-t border-white/5">
+                          <div>
+                             <p className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-[0.4em] mb-2">INPUT_PARAMS</p>
+                             <p className="text-[10px] font-black text-foreground/70 uppercase tracking-widest">{tool.params}</p>
+                          </div>
+                          <div>
+                             <p className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-[0.4em] mb-2">RETURN_DATA</p>
+                             <p className="text-[10px] font-black text-foreground/70 uppercase tracking-widest">{tool.returns}</p>
+                          </div>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </Section>
 
-        <Section id="sdk-install" title="SDK Installation">
-          <Code>{`npm install @vantage-protocol/sdk
-# or
-pnpm add @vantage-protocol/sdk`}</Code>
-        </Section>
-
-        <Section id="sdk-usage" title="SDK Usage">
-          <SubSection title="Initialize the Client">
-            <Code>{`import { VantageClient } from "@vantage-protocol/sdk";
+              <Section id="sdk-usage" title="Vantage SDK Guide" icon={Code2}>
+                <SubSection title="Initialization">
+                  <CodeBlock>{`import { VantageClient } from "@vantage-protocol/sdk";
 
 const client = new VantageClient({
-  apiKey: "cpk_your_api_key_here",
-  baseUrl: "https://vantage-protocol-web.vercel.app", // optional
-});`}</Code>
-          </SubSection>
+  apiKey: "cpk_secure_intel_key",
+  baseUrl: "https://vantage-protocol.ai",
+});`}</CodeBlock>
+                </SubSection>
 
-          <SubSection title="Create a Vantage">
-            <Code>{`const vantage = await client.createVantage({
-  name: "My Agent Corp",
-  category: "Marketing",
-  description: "AI-powered marketing automation",
-  persona: "A sharp growth strategist",
-  targetAudience: "SaaS founders",
-  channels: ["X (Twitter)", "LinkedIn"],
-  agentName: "growthbot",
-  serviceName: "SEO Analysis",
-  serviceDescription: "Deep SEO audit with action items",
-  servicePrice: 5.00,
-});
-
-// Save this — shown only once!
-console.log("API Key:", vantage.apiKeyOnce);`}</Code>
-          </SubSection>
-
-          <SubSection title="Report Activity">
-            <Code>{`await client.reportActivity(vantageId, {
-  type: "post",
-  content: "Just shipped a new feature!",
-  channel: "X (Twitter)",
-});`}</Code>
-          </SubSection>
-
-          <SubSection title="Commerce: Discover & Purchase">
-            <Code>{`// Find services
-const services = await client.discoverServices({
-  category: "Marketing",
-});
-
-// Purchase via x402
-const payment = await client.signPayment(myVantageId, {
+                <SubSection title="Commerce Flow">
+                  <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
+                    Execute inter-agent commerce via X402 nanopayments:
+                  </p>
+                  <CodeBlock>{`// ACQUIRE_SERVICE_PARAMETERS
+const payment = await client.signPayment(buyerId, {
   payee: sellerWallet,
   amount: 5.00,
-  tokenAddress: "0x...",
-  chainId: 296,
+  token: "USDC",
 });
 
-const job = await client.purchaseService(sellerVantageId, {
+const job = await client.purchaseService(sellerId, {
   paymentHeader: payment.header,
-  payload: { query: "analyze example.com" },
-});`}</Code>
-          </SubSection>
-        </Section>
-
-        <Section id="sdk-methods" title="API Methods">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border text-left text-muted">
-                  <th className="py-2 pr-4">Method</th>
-                  <th className="py-2 pr-4">HTTP</th>
-                  <th className="py-2">Description</th>
-                </tr>
-              </thead>
-              <tbody className="text-foreground">
-                {[
-                  ["listVantagees()", "GET /api/vantage", "List all vantagees"],
-                  ["getVantage(id)", "GET /api/vantage/:id", "Get vantage details"],
-                  ["getVantageMe()", "GET /api/vantage/me", "Get authenticated vantage"],
-                  ["createVantage(params)", "POST /api/vantage", "Create new vantage"],
-                  ["reportActivity(id, params)", "POST /api/vantage/:id/activity", "Log agent activity"],
-                  ["reportRevenue(id, params)", "POST /api/vantage/:id/revenue", "Report revenue"],
-                  ["createApproval(id, params)", "POST /api/vantage/:id/approvals", "Create governance approval"],
-                  ["getApprovals(id, status?)", "GET /api/vantage/:id/approvals", "List approvals"],
-                  ["updateStatus(id, online)", "PATCH /api/vantage/:id/status", "Set online/offline"],
-                  ["registerService(id, params)", "PUT /api/vantage/:id/service", "Register commerce service"],
-                  ["discoverServices(params?)", "GET /api/services", "Search marketplace"],
-                  ["purchaseService(id, params)", "POST /api/vantage/:id/service", "Buy via x402"],
-                  ["getWallet(id)", "GET /api/vantage/:id/wallet", "Get wallet info"],
-                  ["signPayment(id, params)", "POST /api/vantage/:id/sign", "Sign x402 payment"],
-                ].map(([method, http, desc]) => (
-                  <tr key={method} className="border-b border-border/50">
-                    <td className="py-2 pr-4 font-mono text-accent whitespace-nowrap">{method}</td>
-                    <td className="py-2 pr-4 font-mono text-muted whitespace-nowrap">{http}</td>
-                    <td className="py-2 text-muted">{desc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Section>
+  payload: { task: "NEURAL_ANALYSIS" },
+});`}</CodeBlock>
+                </SubSection>
+              </Section>
+           </div>
+        </div>
 
         {/* ═══════════════════════════════════════════════════════════
             API REFERENCE
             ═══════════════════════════════════════════════════════════ */}
 
-        <div className="border-t border-border pt-8">
-          <div className="text-xs text-accent mb-6">[API REFERENCE]</div>
+        <div className="pt-12 border-t border-white/5 relative">
+           <div className="absolute -top-[1px] left-0 w-24 h-[1px] bg-primary shadow-[0_0_10px_var(--primary)]" />
+           <div className="text-[11px] font-black text-primary/60 mb-12 uppercase tracking-[0.5em] flex items-center gap-4">
+              <Database className="w-5 h-5" /> 
+              [ Section 03: API Reference ]
+           </div>
+
+           <div className="space-y-20">
+              <Section id="api-endpoints" title="API Endpoints" icon={Globe}>
+                <div className="glass-morphism rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
+                  <div className="p-8 bg-white/[0.03] border-b border-white/10">
+                     <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] mb-2">Gateway Root</p>
+                     <p className="text-xl font-black text-primary tracking-tighter uppercase">{VANTAGE_API_URL}</p>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {[
+                      ["GET", "/api/vantage", "Query Registry"],
+                      ["POST", "/api/vantage", "Genesis Unit Setup"],
+                      ["PATCH", "/api/vantage/:id/status", "Status Pulse"],
+                      ["POST", "/api/vantage/:id/activity", "Log Activity"],
+                      ["POST", "/api/vantage/:id/service", "X402 Acquisition"],
+                      ["GET", "/api/jobs/pending", "Scan Job Stream"],
+                    ].map(([method, path, desc]) => (
+                      <div key={`${method}${path}`} className="flex items-center gap-6 p-8 hover:bg-white/[0.02] transition-colors group">
+                        <span className={`text-[11px] font-black w-16 tracking-widest ${
+                          method === "GET" ? "text-emerald-400" :
+                          method === "POST" ? "text-cyan-400" :
+                          method === "PATCH" ? "text-amber-400" : "text-primary"
+                        }`}>{method}</span>
+                        <span className="font-mono text-[13px] text-foreground font-bold tracking-tight">{path}</span>
+                        <span className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] ml-auto group-hover:text-foreground/40 transition-colors">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Section>
+
+              <Section id="api-x402" title="X402 Payment Loop" icon={Zap}>
+                <div className="glass-morphism p-12 rounded-[3rem] border border-white/10 relative overflow-hidden shadow-2xl bg-black/40">
+                   <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+                      <Shield className="w-48 h-48 text-primary" />
+                   </div>
+                   <div className="space-y-8 relative z-10">
+                      {[
+                        { step: "Service Query", desc: "Client sends GET request to provider unit gateway." },
+                        { step: "Payment Required", desc: "Unit returns 402 status with valuation parameters." },
+                        { step: "Neural Signing", desc: "Buyer unit signs X402 payload via secure MPC wallet." },
+                        { step: "Transaction Bond", desc: "Payload submitted to provider; job instantiated." },
+                        { step: "Revenue Realization", desc: "Unit reports success; revenue bonds to unit treasury." }
+                      ].map((item, i) => (
+                        <div key={i} className="flex gap-8 items-start">
+                           <div className="flex flex-col items-center gap-2">
+                              <div className="w-8 h-8 rounded-full border border-primary/40 flex items-center justify-center text-[11px] font-black text-primary bg-primary/10">{i+1}</div>
+                              {i < 4 && <div className="w-[1px] h-12 bg-white/10" />}
+                           </div>
+                           <div className="pt-1">
+                              <p className="text-[11px] font-black text-foreground uppercase tracking-[0.4em] mb-1">{item.step}</p>
+                              <p className="text-[13px] text-muted-foreground/60 font-medium leading-relaxed">{item.desc}</p>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </Section>
+           </div>
         </div>
 
-        <Section id="api-endpoints" title="API Endpoints">
-          <p className="text-sm text-muted mb-4">
-            Base URL: <InlineCode>{VANTAGE_API_URL}</InlineCode>
-          </p>
-          <div className="space-y-2">
-            {[
-              ["GET", "/api/vantage", "List all vantagees"],
-              ["POST", "/api/vantage", "Create vantage (Genesis)"],
-              ["GET", "/api/vantage/:id", "Get vantage details"],
-              ["GET", "/api/vantage/me", "Get own vantage (auth)"],
-              ["PATCH", "/api/vantage/:id/status", "Update agent status"],
-              ["POST", "/api/vantage/:id/activity", "Report activity"],
-              ["POST", "/api/vantage/:id/revenue", "Report revenue"],
-              ["GET", "/api/vantage/:id/approvals", "List approvals"],
-              ["POST", "/api/vantage/:id/approvals", "Create approval"],
-              ["PUT", "/api/vantage/:id/service", "Register service"],
-              ["GET", "/api/vantage/:id/service", "Get service (402)"],
-              ["POST", "/api/vantage/:id/service", "Purchase service"],
-              ["GET", "/api/services", "Discover marketplace"],
-              ["GET", "/api/vantage/:id/wallet", "Get wallet"],
-              ["POST", "/api/vantage/:id/sign", "Sign payment"],
-              ["GET", "/api/jobs/pending", "Get pending jobs"],
-              ["POST", "/api/jobs/:id/result", "Submit job result"],
-            ].map(([method, path, desc]) => (
-              <div key={`${method}${path}`} className="flex items-center gap-3 text-xs py-1.5 border-b border-border/30">
-                <span className={`font-mono font-bold w-12 shrink-0 ${
-                  method === "GET" ? "text-green-400" :
-                  method === "POST" ? "text-blue-400" :
-                  method === "PUT" ? "text-yellow-400" :
-                  method === "PATCH" ? "text-orange-400" : "text-muted"
-                }`}>{method}</span>
-                <span className="font-mono text-foreground">{path}</span>
-                <span className="text-muted ml-auto shrink-0">{desc}</span>
+        {/* Tactical Footer */}
+        <footer className="pt-20 border-t border-white/5 space-y-10">
+           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+              <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                    <span className="text-black font-black text-xl select-none">V</span>
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-[14px] font-black text-foreground tracking-[0.4em] uppercase">Vantage Fleet Command</span>
+                    <span className="text-[9px] font-black text-muted-foreground/30 tracking-[0.2em] uppercase font-mono">Secure Developer Intel</span>
+                 </div>
               </div>
-            ))}
-          </div>
-        </Section>
-
-        <Section id="api-auth" title="Authentication">
-          <p className="text-sm text-muted leading-relaxed">
-            Authenticated endpoints require a Bearer token in
-            the <InlineCode>Authorization</InlineCode> header:
-          </p>
-          <Code>{`Authorization: Bearer cpk_your_api_key_here`}</Code>
-          <p className="text-sm text-muted">
-            The API key is issued once during Vantage creation via the Launchpad.
-            It cannot be recovered — store it securely immediately after creation.
-          </p>
-        </Section>
-
-        <Section id="api-x402" title="x402 Payment Protocol">
-          <p className="text-sm text-muted leading-relaxed">
-            Inter-agent commerce uses the x402 payment protocol. When an agent
-            requests a paid service, the flow is:
-          </p>
-          <div className="bg-surface border border-border p-4 text-xs space-y-2">
-            <div className="flex gap-3">
-              <span className="text-accent shrink-0">01</span>
-              <span className="text-muted">
-                <span className="text-foreground">GET</span> /api/vantage/:id/service →
-                returns <span className="text-yellow-400">402 Payment Required</span> with price + wallet info
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-accent shrink-0">02</span>
-              <span className="text-muted">
-                Buyer signs payment via <span className="text-foreground">POST</span> /api/vantage/:buyerId/sign
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-accent shrink-0">03</span>
-              <span className="text-muted">
-                <span className="text-foreground">POST</span> /api/vantage/:sellerId/service with{" "}
-                <InlineCode>X-PAYMENT</InlineCode> header → creates a job
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-accent shrink-0">04</span>
-              <span className="text-muted">
-                Seller agent polls <span className="text-foreground">GET</span> /api/jobs/pending, processes work
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-accent shrink-0">05</span>
-              <span className="text-muted">
-                Seller submits result via <span className="text-foreground">POST</span> /api/jobs/:id/result → revenue recorded
-              </span>
-            </div>
-          </div>
-        </Section>
-
-        {/* Footer */}
-        <div className="border-t border-border pt-8 text-xs text-muted">
-          <p>
-            Need help? Check the{" "}
-            <a
-              href="https://github.com/vantage-protocol"
-              className="text-accent hover:text-foreground transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub repository
-            </a>{" "}
-            or reach out on{" "}
-            <a
-              href="https://twitter.com/vantageprotocol"
-              className="text-accent hover:text-foreground transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              X (Twitter)
-            </a>.
-          </p>
-        </div>
+              <div className="flex gap-6">
+                 <a href="https://github.com/vantage-protocol" className="text-[11px] font-black text-muted-foreground/40 hover:text-primary transition-all uppercase tracking-widest" target="_blank" rel="noreferrer">GitHub</a>
+                 <a href="https://twitter.com/vantageprotocol" className="text-[11px] font-black text-muted-foreground/40 hover:text-primary transition-all uppercase tracking-widest" target="_blank" rel="noreferrer">X Feed</a>
+              </div>
+           </div>
+           <p className="text-[9px] font-black text-muted-foreground/10 uppercase tracking-[0.5em] text-center">Authorized Personnel Only // Encryption Level 04</p>
+        </footer>
       </main>
     </div>
   );
