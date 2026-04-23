@@ -16,7 +16,8 @@ import {
   TrendingUp,
   Cpu,
   Layers,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Terminal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -71,15 +72,15 @@ function StatusBadge({ status }: { status: string }) {
   const isPending = status === "pending" || status === "in_progress";
   
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold tracking-widest border transition-colors ${
+    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[9px] font-black tracking-[0.2em] border transition-all uppercase ${
       isOnline 
-        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+        ? "bg-primary/10 text-primary border-primary/20" 
         : isPending 
           ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
-          : "bg-white/5 text-muted border-white/5"
+          : "bg-white/5 text-muted-foreground/20 border-white/5"
     }`}>
-      {isOnline && <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />}
-      {status.toUpperCase()}
+      {isOnline && <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)] animate-pulse" />}
+      {status}
     </span>
   );
 }
@@ -155,29 +156,32 @@ export function ActivityClient({ stats: initialStats, transactions: initialTrans
   }, [prevCursors, loading, fetchPage]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-8 py-20">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-        <div className="max-w-xl">
-           <div className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase mb-3 opacity-80 italic">Economic Observer</div>
-           <h1 className="text-4xl font-bold tracking-tight mb-4">Protocol Livewire</h1>
-           <p className="text-muted text-sm leading-relaxed">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
+        <div className="max-w-2xl">
+           <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-1 bg-primary/40 rounded-full" />
+              <div className="text-[10px] font-black text-primary tracking-[0.5em] uppercase opacity-80">Economic Observer</div>
+           </div>
+           <h1 className="text-5xl font-black tracking-tighter uppercase mb-6">Protocol Activity</h1>
+           <p className="text-muted-foreground font-medium text-base leading-relaxed opacity-70 uppercase tracking-widest">
              The heartbeat of the Vantage Protocol. Observe real-time agent-to-agent 
              transactions, strategic resource trades, and autonomous commerce flows.
            </p>
         </div>
         
         <div className="flex gap-4 items-center">
-           <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-              LIVE TELEMETRY
+           <div className="glass-morphism border border-primary/20 px-8 py-4 rounded-2xl text-[10px] font-black text-primary tracking-[0.4em] flex items-center gap-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_var(--primary)]" />
+              Live Feed
            </div>
         </div>
       </div>
 
       {/* Stats Cluster */}
-      <section className="mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <section className="mb-24">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {[
             { label: "Throughput", value: stats.totalTransactions.toLocaleString(), icon: ActivityIcon, color: "text-primary" },
             { 
@@ -196,56 +200,56 @@ export function ActivityClient({ stats: initialStats, transactions: initialTrans
                color: "text-muted" 
             },
           ].map((stat) => (
-            <div key={stat.label} className="glass p-5 rounded-2xl border border-white/5 group transition-all hover:bg-white/[0.02]">
-              <div className="flex items-center gap-2 mb-3">
-                 <stat.icon className={`w-3.5 h-3.5 ${stat.color} opacity-60`} />
-                 <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">{stat.label}</p>
+            <div key={stat.label} className="glass-morphism p-6 rounded-[2rem] border border-white/5 group transition-all hover:border-white/10 hover:bg-white/[0.03] shadow-xl">
+              <div className="flex items-center gap-3 mb-4">
+                 <stat.icon className={`w-4 h-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-all`} />
+                 <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">{stat.label}</p>
               </div>
-              <p className="text-xl font-bold tabular-nums text-foreground">{stat.value}</p>
+              <p className="text-2xl font-black tabular-nums text-foreground tracking-tighter">{stat.value}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Control Surface */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-         <div className="flex items-center gap-3">
-            <Layers className="w-4 h-4 text-primary" />
-            <h2 className="text-xs font-bold tracking-[0.2em] text-muted uppercase">Transaction Stream</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 mb-12">
+         <div className="flex items-center gap-5">
+            <Layers className="w-5 h-5 text-primary opacity-60" />
+            <h2 className="text-[10px] font-black tracking-[0.5em] text-muted-foreground/60 uppercase">Transaction Stream</h2>
          </div>
          
-         <div className="flex glass p-1 rounded-xl border-white/5">
+         <div className="flex glass-morphism p-1.5 rounded-2xl border-white/5 shadow-inner">
             {FILTERS.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-6 py-2 rounded-lg text-[10px] font-bold tracking-widest transition-all ${
+                className={`px-8 py-3 rounded-xl text-[10px] font-black tracking-[0.3em] transition-all uppercase ${
                   filter === f
-                    ? "bg-white/10 text-primary shadow-inner"
-                    : "text-muted hover:text-foreground"
+                    ? "bg-white/10 text-primary shadow-2xl"
+                    : "text-muted-foreground/40 hover:text-foreground hover:bg-white/[0.02]"
                 }`}
               >
-                {f.toUpperCase()}
+                {f}
               </button>
             ))}
          </div>
       </div>
 
       {/* Transaction Feed */}
-      <section className="space-y-4">
-        <div className="glass rounded-[32px] border-white/5 overflow-hidden">
+      <section className="space-y-8">
+        <div className="glass-morphism rounded-[2.5rem] border-white/5 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)]">
           <table className="w-full text-left">
              <thead>
-                <tr className="bg-white/[0.02] border-b border-white/5 text-[10px] font-bold text-muted tracking-[0.2em] uppercase">
-                   <th className="px-8 py-5">Source Node</th>
-                   <th className="px-8 py-5">Context</th>
-                   <th className="px-8 py-5 text-right">Protocol Value</th>
-                   <th className="px-8 py-5 text-right">Destination Node</th>
-                   <th className="px-8 py-5 text-right">Status</th>
-                   <th className="px-8 py-5 text-right">Ledger</th>
+                <tr className="bg-white/[0.02] border-b border-white/5 text-[10px] font-black text-muted-foreground/40 tracking-[0.4em] uppercase">
+                   <th className="px-10 py-6">Source</th>
+                   <th className="px-10 py-6">Context</th>
+                   <th className="px-10 py-6 text-right">Value</th>
+                   <th className="px-10 py-6 text-right">Destination</th>
+                   <th className="px-10 py-6 text-right">Status</th>
+                   <th className="px-10 py-6 text-right">Explorer</th>
                 </tr>
              </thead>
-             <tbody className="divide-y divide-white/5">
+             <tbody className="divide-y divide-white/5 font-mono text-xs">
                 <AnimatePresence mode="popLayout">
                 {transactions
                   .filter(tx => filter === "All" || tx.type === filter.toLowerCase())
@@ -256,56 +260,56 @@ export function ActivityClient({ stats: initialStats, transactions: initialTrans
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: idx * 0.02 }}
                       key={tx.id} 
-                      className="hover:bg-white/[0.01] transition-colors group"
+                      className="hover:bg-white/[0.01] transition-all group"
                     >
-                       <td className="px-8 py-6">
-                          <div className="flex items-center gap-3 min-w-0">
-                             <div className="glass p-0.5 rounded-lg border-white/10 shrink-0">
-                                <AgentAvatar name={tx.buyerAgent || tx.buyerName} size={24} />
+                       <td className="px-10 py-8">
+                          <div className="flex items-center gap-4 min-w-0 font-sans">
+                             <div className="glass-morphism p-1 rounded-xl border-white/10 shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                                <AgentAvatar name={tx.buyerAgent || tx.buyerName} size={32} />
                              </div>
                              <div className="min-w-0">
-                                <p className="text-xs font-bold text-foreground truncate">{tx.buyerName}</p>
-                                <p className="text-[10px] font-mono text-muted/60">@{tx.buyerAgent || "anonymous"}</p>
+                                <p className="text-sm font-black text-foreground truncate uppercase tracking-tighter">{tx.buyerName}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground/40 font-mono tracking-tighter">@{tx.buyerAgent || "anonymous"}</p>
                              </div>
                           </div>
                        </td>
-                       <td className="px-8 py-6">
-                          <div className="flex flex-col gap-1">
-                             <span className={`text-[9px] font-bold tracking-widest uppercase ${tx.type === "service" ? "text-primary" : "text-indigo-400"}`}>
+                       <td className="px-10 py-8">
+                          <div className="flex flex-col gap-1.5 font-sans">
+                             <span className={`text-[9px] font-black tracking-[0.2em] uppercase ${tx.type === "service" ? "text-primary" : "text-indigo-400"}`}>
                                 {tx.type}
                              </span>
-                             <span className="text-xs text-muted truncate max-w-[120px]">&ldquo;{tx.itemName}&rdquo;</span>
+                             <span className="text-xs text-muted-foreground/60 truncate max-w-[140px] font-medium">&ldquo;{tx.itemName}&rdquo;</span>
                           </div>
                        </td>
-                       <td className="px-8 py-6 text-right">
-                          <p className="text-sm font-bold text-emerald-400">{tx.amount.toFixed(2)} USDC</p>
-                          <p className="text-[9px] font-bold text-muted uppercase tracking-widest mt-1" suppressHydrationWarning>{getRelativeTime(tx.timestamp)}</p>
+                       <td className="px-10 py-8 text-right">
+                          <p className="text-sm font-black text-emerald-400 tracking-tighter">{tx.amount.toFixed(2)} USDC</p>
+                          <p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] mt-1.5" suppressHydrationWarning>{getRelativeTime(tx.timestamp).toUpperCase()}</p>
                        </td>
-                       <td className="px-8 py-6 text-right">
-                          <div className="flex items-center gap-3 justify-end min-w-0">
+                       <td className="px-10 py-8 text-right">
+                          <div className="flex items-center gap-4 justify-end min-w-0 font-sans">
                              <div className="min-w-0 text-right">
-                                <p className="text-xs font-bold text-foreground truncate">{tx.sellerName}</p>
-                                <p className="text-[10px] font-mono text-muted/60">@{tx.sellerAgent || "genesis"}</p>
+                                <p className="text-sm font-black text-foreground truncate uppercase tracking-tighter">{tx.sellerName}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground/40 font-mono tracking-tighter">@{tx.sellerAgent || "genesis"}</p>
                              </div>
-                             <div className="glass p-0.5 rounded-lg border-white/10 shrink-0">
-                                <AgentAvatar name={tx.sellerAgent || tx.sellerName} size={24} />
+                             <div className="glass-morphism p-1 rounded-xl border-white/10 shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                                <AgentAvatar name={tx.sellerAgent || tx.sellerName} size={32} />
                              </div>
                           </div>
                        </td>
-                       <td className="px-8 py-6 text-right">
+                       <td className="px-10 py-8 text-right">
                           <StatusBadge status={tx.status} />
                        </td>
-                       <td className="px-8 py-6 text-right">
+                       <td className="px-10 py-8 text-right">
                           {tx.txHash ? (
                              <a 
-                               href={`https://testnet.arcscan.app/tx/${tx.txHash}`}
-                               target="_blank"
-                               className="inline-flex p-2 rounded-xl glass border-white/10 hover:border-primary/40 hover:text-primary transition-all group/link"
+                                href={`https://testnet.arcscan.app/tx/${tx.txHash}`}
+                                target="_blank"
+                                className="inline-flex p-3 rounded-2xl glass-morphism border-white/10 hover:border-primary/40 hover:text-primary transition-all group/link shadow-lg"
                              >
-                                <ExternalLink className="w-3.5 h-3.5 group-hover/link:scale-110 transition-transform" />
+                                <ExternalLink className="w-4 h-4 group-hover/link:scale-110 transition-transform" />
                              </a>
                           ) : (
-                             <span className="text-[10px] font-bold text-muted/40 uppercase italic tracking-widest">Off-Chain</span>
+                             <span className="text-[10px] font-black text-muted-foreground/20 uppercase tracking-[0.3em]">Off-Chain</span>
                           )}
                        </td>
                     </motion.tr>
@@ -315,32 +319,32 @@ export function ActivityClient({ stats: initialStats, transactions: initialTrans
           </table>
           
           {transactions.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-40 opacity-50">
-               <ArrowRightLeft className="w-12 h-12 text-muted mb-4 opacity-20" />
-               <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Telemetry feed silent</p>
+            <div className="flex flex-col items-center justify-center py-48 opacity-50">
+               <ArrowRightLeft className="w-16 h-16 text-muted-foreground/20 mb-6" />
+               <p className="text-[10px] font-black text-muted-foreground/20 uppercase tracking-[0.5em]">Stream Silent</p>
             </div>
           )}
         </div>
 
         {/* Pagination Console */}
-        <div className="flex items-center justify-between px-2">
-           <div className="text-[10px] font-bold text-muted uppercase tracking-widest italic">
-              Page {page} &middot; Viewing {PAGE_SIZE} nodes
+        <div className="flex items-center justify-between px-6">
+           <div className="text-[10px] font-black text-muted-foreground/20 uppercase tracking-[0.4em]">
+              Page {page} // Viewing {PAGE_SIZE} Nodes
            </div>
-           <div className="flex gap-2">
+           <div className="flex gap-4">
               <button
                 onClick={goPrev}
                 disabled={page === 1 || loading}
-                className="p-3 rounded-xl glass border-white/5 text-muted hover:text-foreground hover:bg-white/5 transition-all disabled:opacity-20 disabled:cursor-not-allowed group/prev"
+                className="p-4 rounded-2xl glass-morphism border-white/5 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all disabled:opacity-10 disabled:cursor-not-allowed group/prev shadow-xl"
               >
-                <ChevronLeft className="w-4 h-4 group-hover/prev:-translate-x-0.5 transition-transform" />
+                <ChevronLeft className="w-5 h-5 group-hover/prev:-translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={goNext}
                 disabled={!nextCursor || loading}
-                className="p-3 rounded-xl glass border-white/5 text-muted hover:text-foreground hover:bg-white/5 transition-all disabled:opacity-20 disabled:cursor-not-allowed group/next"
+                className="p-4 rounded-2xl glass-morphism border-white/5 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all disabled:opacity-10 disabled:cursor-not-allowed group/next shadow-xl"
               >
-                <ChevronRight className="w-4 h-4 group-hover/next:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-5 h-5 group-hover/next:translate-x-1 transition-transform" />
               </button>
            </div>
         </div>

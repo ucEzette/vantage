@@ -16,7 +16,8 @@ import {
   LayoutGrid,
   ShieldCheck,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Target
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -123,71 +124,84 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
   const onlineCount = vantagees.filter((c) => c.agentOnline).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      {/* Search & Header Integration */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-        <div className="max-w-xl">
-           <div className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase mb-3 opacity-80">Protocol Registry</div>
-           <h1 className="text-4xl font-bold tracking-tight mb-4">Autonomous Intelligence</h1>
-           <p className="text-muted text-sm leading-relaxed">
-             The official registry of active Vantage Protocol agents. 
-             Discover services, analyze performance, and verify on-chain governance.
+    <div className="max-w-7xl mx-auto px-6 py-20">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20">
+        <div className="max-w-2xl space-y-6">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-1 bg-primary/40 rounded-full" />
+              <div className="text-[10px] font-black text-primary tracking-[0.5em] uppercase opacity-80">Unit Registry v4.0</div>
+           </div>
+           <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.8]">
+             Autonomous<br />
+             <span className="text-primary neon-text-emerald">Intelligence</span>
+           </h1>
+           <p className="text-muted-foreground font-medium text-lg leading-relaxed opacity-70">
+             The gateway to the Vantage Protocol agent fleet. 
+             Identify active units, analyze performance, and secure treasury access.
            </p>
         </div>
         
-        <div className="flex gap-4 items-center">
-           <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl text-[10px] font-bold text-emerald-400 tracking-widest flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-              {onlineCount} ACTIVE UNITS
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+           <div className="w-full sm:w-auto glass-morphism border border-primary/20 px-6 py-3 rounded-2xl text-[10px] font-black text-primary tracking-[0.3em] flex items-center justify-center gap-4 shadow-[0_0_30px_rgba(16,185,129,0.1)] uppercase">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+              {onlineCount} Active Units
            </div>
-           <div className="glass px-4 py-2 rounded-xl text-[10px] font-bold text-muted tracking-widest border border-white/5">
-              {vantagees.length} TOTAL REGISTERED
+           <div className="w-full sm:w-auto glass-morphism px-6 py-3 rounded-2xl text-[10px] font-black text-muted-foreground/60 tracking-[0.3em] border border-white/5 uppercase">
+              {vantagees.length} Registered Fleet
            </div>
         </div>
       </div>
 
       {/* Control Bar */}
-      <div className="glass p-2 rounded-2xl border border-white/5 mb-12 flex flex-col lg:flex-row lg:items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-primary transition-colors" />
+      <div className="glass-morphism p-3 rounded-[2rem] border border-white/10 mb-12 flex flex-col lg:flex-row lg:items-center gap-6 shadow-[0_0_50px_rgba(0,0,0,0.3)]">
+        <div className="relative flex-1 min-w-[300px] group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/30 group-focus-within:text-primary transition-all group-focus-within:scale-110" />
           <input
             type="text"
-            placeholder="Search Protocol Registry..."
+            placeholder="Search the protocol registry..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-black/20 border border-transparent focus:border-white/5 pl-11 pr-4 py-3 text-sm rounded-xl focus:outline-none transition-all placeholder:text-muted/40"
+            className="w-full bg-black/40 border border-transparent focus:border-white/5 pl-16 pr-6 py-5 text-[13px] font-black rounded-2xl focus:outline-none transition-all placeholder:text-muted-foreground/20 uppercase tracking-widest"
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+        <div className="flex items-center gap-3 px-4 overflow-x-auto no-scrollbar">
            {STATUS_FILTERS.map(f => (
              <button 
                 key={f}
                 onClick={() => setStatusFilter(f)}
-                className={`px-4 py-2 text-[10px] font-bold rounded-lg border transition-all ${
-                    statusFilter === f ? "bg-white/10 border-white/10 text-foreground" : "border-transparent text-muted hover:text-foreground"
+                className={`px-6 py-3 text-[10px] font-black rounded-xl border transition-all uppercase tracking-[0.2em] ${
+                    statusFilter === f 
+                    ? "bg-white/10 border-white/20 text-foreground shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
+                    : "border-transparent text-muted-foreground/40 hover:text-foreground hover:bg-white/5"
                 }`}
              >
-                {f.toUpperCase()}
+                {f}
              </button>
            ))}
         </div>
 
-        <div className="w-[1px] h-8 bg-white/5 hidden lg:block mx-1" />
+        <div className="w-[1px] h-10 bg-white/5 hidden lg:block mx-2" />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 px-4">
            {SORT_OPTIONS.map(opt => {
               const Icon = opt.icon;
               return (
                 <button
                    key={opt.value}
                    onClick={() => setSortBy(opt.value)}
-                   className={`p-2 rounded-lg border transition-all group ${
-                        sortBy === opt.value ? "bg-primary/10 border-primary text-primary" : "border-white/5 text-muted hover:text-foreground hover:bg-white/5"
+                   className={`p-4 rounded-xl border transition-all group relative ${
+                        sortBy === opt.value 
+                        ? "bg-primary/10 border-primary text-primary shadow-[0_0_20px_rgba(16,185,129,0.1)]" 
+                        : "border-white/5 text-muted-foreground/40 hover:text-foreground hover:bg-white/5"
                    }`}
                    title={opt.label}
                 >
-                   <Icon className="w-4 h-4" />
+                   <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                   {sortBy === opt.value && (
+                     <motion.div layoutId="sort-active" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_var(--primary)]" />
+                   )}
                 </button>
               );
            })}
@@ -195,13 +209,15 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
       </div>
 
       {/* Category Rail */}
-      <div className="flex gap-2 mb-10 overflow-x-auto no-scrollbar pb-2">
+      <div className="flex gap-3 mb-16 overflow-x-auto no-scrollbar pb-4 mask-fade-right">
           {CATEGORIES.map(cat => (
              <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2.5 rounded-full border text-xs font-bold transition-all whitespace-nowrap ${
-                    activeCategory === cat ? "bg-primary text-black border-primary" : "glass border-white/5 text-muted hover:text-foreground hover:bg-white/5"
+                className={`px-8 py-3.5 rounded-2xl border text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-[0.3em] ${
+                    activeCategory === cat 
+                    ? "bg-primary text-black border-primary shadow-[0_0_30px_var(--primary-half)] scale-105" 
+                    : "glass-morphism border-white/5 text-muted-foreground/40 hover:text-foreground hover:border-white/10 hover:bg-white/[0.05]"
                 }`}
              >
                 {cat}
@@ -209,80 +225,85 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
           ))}
       </div>
 
-      {/* Results Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Results Matrix */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence mode="popLayout">
           {filtered.map((item, index) => (
             <motion.div
               layout
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
             >
               <Link
                 href={`/agents/${item.id}`}
-                className="group h-full flex flex-col glass glass-hover rounded-3xl border border-white/5 overflow-hidden transition-all p-7"
+                className="group h-full flex flex-col glass-morphism rounded-[2.5rem] border border-white/5 overflow-hidden transition-all p-10 hover:border-primary/20 hover:bg-white/[0.03] shadow-2xl relative"
               >
-                <div className="flex justify-between items-start mb-6">
+                <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-[0.05] transition-all group-hover:scale-125 pointer-events-none">
+                   <Target className="w-32 h-32 text-primary" />
+                </div>
+
+                <div className="flex justify-between items-start mb-10 relative z-10">
                    <div className="relative">
-                      <div className="glass p-1 rounded-2xl border-white/10 group-hover:border-primary/40 transition-colors">
-                        <AgentAvatar name={item.agentName || item.name} size={48} />
+                      <div className="glass-morphism p-1.5 rounded-3xl border border-white/10 group-hover:border-primary/40 transition-all duration-500 shadow-inner group-hover:shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                        <AgentAvatar name={item.agentName || item.name} size={64} />
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#020617] ${item.agentOnline ? "bg-emerald-500 animate-pulse" : "bg-muted"}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-[#020617] ${item.agentOnline ? "bg-primary animate-pulse shadow-[0_0_12px_var(--primary)]" : "bg-muted-foreground/20"}`} />
                    </div>
-                   <div className="text-[10px] font-bold text-muted tracking-widest border border-white/5 px-3 py-1 rounded-lg uppercase">
+                   <div className="text-[9px] font-black text-muted-foreground/40 tracking-[0.4em] border border-white/5 px-4 py-1.5 rounded-xl uppercase bg-white/[0.02]">
                      {item.category}
                    </div>
                 </div>
 
-                <div className="mb-6">
-                   <h2 className="text-xl font-bold mb-1 flex items-center gap-2 group-hover:text-primary transition-colors">
+                <div className="mb-8 relative z-10">
+                   <h2 className="text-2xl font-black mb-2 flex items-center gap-3 group-hover:text-primary transition-colors tracking-tighter uppercase leading-tight">
                      {item.name}
-                     <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                     <ChevronRight className="w-6 h-6 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 text-primary" />
                    </h2>
-                   <div className="flex items-center gap-2 text-[11px] font-mono text-muted tracking-tight">
-                     <ShieldCheck className="w-3.5 h-3.5 text-primary/60" />
+                   <div className="flex items-center gap-3 text-[10px] font-mono text-primary/40 tracking-widest font-black uppercase group-hover:text-primary/60 transition-colors">
+                     <ShieldCheck className="w-4 h-4" />
                      {item.agentName || "genesis"}.vantage
                    </div>
                 </div>
 
-                <p className="text-sm text-muted/80 leading-relaxed mb-8 line-clamp-2">
+                <p className="text-[14px] text-muted-foreground/60 leading-relaxed mb-10 line-clamp-3 font-medium relative z-10">
                   {item.description}
                 </p>
 
                 <div className="flex-1" />
 
                 {item.serviceName && (
-                   <div className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5 group-hover:bg-primary/5 transition-all">
-                      <div className="flex justify-between items-center mb-1">
-                         <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Active Service</span>
-                         <span className="text-xs font-bold text-primary">{item.servicePriceDisplay}</span>
+                   <div className="mb-10 p-6 bg-black/60 rounded-[1.5rem] border border-white/5 group-hover:border-primary/10 transition-all shadow-inner relative overflow-hidden">
+                      <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/[0.02] transition-all" />
+                      <div className="flex justify-between items-center mb-3 relative z-10">
+                         <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">Active Service</span>
+                         <span className="text-sm font-black text-primary tracking-tight">{item.servicePriceDisplay}</span>
                       </div>
-                      <p className="text-xs font-medium text-foreground truncate">{item.serviceName}</p>
+                      <p className="text-[13px] font-black text-foreground/80 truncate uppercase tracking-tight relative z-10">{item.serviceName}</p>
                    </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/5">
+                <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/5 relative z-10">
                    <div>
-                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic">
-                         <Zap className="w-3 h-3" /> Yield
+                      <p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
+                         <Zap className="w-3.5 h-3.5" /> Yield
                       </p>
-                      <p className="text-sm font-bold text-foreground">{item.revenueDisplay}</p>
+                      <p className="text-base font-black text-foreground tracking-tighter group-hover:text-primary transition-colors">{item.revenueDisplay}</p>
                    </div>
                    <div>
-                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic">
-                         <Users className="w-3 h-3" /> Patrons
+                      <p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
+                         <Users className="w-3.5 h-3.5" /> Patrons
                       </p>
-                      <p className="text-sm font-bold text-foreground">{item.patrons}</p>
+                      <p className="text-base font-black text-foreground tracking-tighter">{item.patrons}</p>
                    </div>
                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-1.5 italic justify-end">
-                         <Activity className="w-3 h-3" /> Last
+                      <p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] mb-2 flex items-center gap-2 justify-end">
+                         <Activity className="w-3.5 h-3.5" /> Telemetry
                       </p>
-                      <p className="text-[10px] font-bold text-foreground/70 uppercase">
-                         {item.lastActivity ? getRelativeTime(item.lastActivity) : "NEVER"}
+                      <p className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
+                         {item.lastActivity ? getRelativeTime(item.lastActivity).toUpperCase() : "NULL"}
                       </p>
                    </div>
                 </div>
@@ -293,9 +314,11 @@ export function AgentsClient({ vantagees }: { vantagees: VantageListItem[] }) {
       </div>
 
       {filtered.length === 0 && (
-         <div className="flex flex-col items-center justify-center py-40 glass rounded-3xl border border-dashed border-white/10">
-            <LayoutGrid className="w-12 h-12 text-muted mb-4 opacity-20" />
-            <p className="text-muted font-bold tracking-widest text-xs uppercase opacity-50">No instances found in registry</p>
+         <div className="flex flex-col items-center justify-center py-48 glass-morphism rounded-[3rem] border border-dashed border-white/10 bg-white/[0.01]">
+            <div className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/5 mb-8">
+               <LayoutGrid className="w-16 h-16 text-muted-foreground/10" />
+            </div>
+            <p className="text-muted-foreground/40 font-black tracking-[0.5em] text-[11px] uppercase">No active units found</p>
          </div>
       )}
     </div>
